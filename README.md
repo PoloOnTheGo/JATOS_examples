@@ -2,8 +2,8 @@
 
 Example studies for JATOS (Just Another Tool for Online Studies)
 
-More information about the examples: https://github.com/JATOS/JATOS_examples/wiki/Example-Studies
+More information with a list of all examples and a discription for each: [www.jatos.org/Example-Studies.html](http://www.jatos.org/Example-Studies.html)
 
-More information about JATOS: http://www.jatos.org and https://github.com/JATOS/JATOS/wiki
+More information about JATOS: [www.jatos.org/Whats-JATOS.html](http://www.jatos.org/Whats-JATOS.html)
 
-This software is licensed under the Apache 2 license.
+This software is licensed under the Apache 2 licence.
