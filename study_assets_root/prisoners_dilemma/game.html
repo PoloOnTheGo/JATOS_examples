@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="/study_assets/prisoners_dilemma/libs/pure-release-0.6.0/pure-min.css">
+	<link rel="stylesheet" type="text/css" href="/study_assets/prisoners_dilemma/css/game.css" />
+	<script src="/study_assets/prisoners_dilemma/libs/jquery-1.11.1.min.js"></script>
+	<script src="/assets/javascripts/jatos.js"></script>
+</head>
+
+<body>
+	<p id="error"></p>
+	<div id="game">
+		<div id="actionsRow" class="pure-g">
+			<div id="actionsBox" class="pure-u-1-2">
+				<p class="actionText">
+					<span id="actionRound">Round 1</span>
+					<br>
+					<span id="actionHelp"> </span>
+					<br>
+					<button id="defectButton" class="buttonAction pure-button" onclick="onDefect()" disabled>Defect</button> or
+					<button id="cooperateButton" class="buttonAction pure-button" onclick="onCooperate()" disabled>Cooperate</button>
+				</p>
+			</div>
+			<div id="helpBox" class="pure-u-1-2">
+				<table class="pure-table">
+					<tbody>
+						<tr>
+							<td></td>
+							<td>Defect</td>
+							<td>Cooperate</td>
+						</tr>
+						<tr>
+							<td>Defect</td>
+							<td>1 (1)</td>
+							<td>5 (0)</td>
+						</tr>
+						<tr>
+							<td>Cooperate</td>
+							<td>0 (5)</td>
+							<td>3 (3)</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="statsRow" class="pure-g">
+			<div id="myBox" class="pure-u-1-2">
+				<h2 class="title">You
+					<h2>
+						<p class="scoreLabel">Score
+							<span class="scoreValue">0</span>
+						</p>
+						<p class="historyLabel">History
+							<span class="historyValue">-</span>
+						</p>
+			</div>
+			<div id="otherBox" class="pure-u-1-2">
+				<h2 class="title">Other
+					<h2>
+						<p class="scoreLabel">Score
+							<span class="scoreValue">0</span>
+						</p>
+						<p class="historyLabel">History
+							<span class="historyValue">-</span>
+						</p>
+			</div>
+		</div>
+	</div>
+	<div id="endRow" class="pure-g">
+		<div id="endBox" class="pure-u-1-1">
+			<p>
+				<button id="endStudyButton" class="buttonEnd pure-button" onclick="onEndStudy()" disabled>End Study</button>
+			</p>
+		</div>
+	</div>
+	<p id="quit">Quit Study</p>
+	<script type="text/javascript">
+		var otherGroupMemberid;
+
+		// What to do when jatos.js is finished initializing
+		jatos.onLoad(function () {
+			joinGroup();
+		});
+
+		function joinGroup() {
+			$('#actionHelp').text("Joining group.");
+			jatos.joinGroup({
+				"onOpen": onOpen,
+				"onMemberOpen": onOpen,
+				"onGroupSession": onGroupSession,
+				"onMemberLeave": otherPlayerLeft,
+				"onError": printError
+			});
+		}
+
+		function onOpen() {
+			if (jatos.groupState == "FINISHED" ||
+				jatos.isMaxActiveMemberOpen() ||
+				getMoves(jatos.groupMemberId).length > 0) {
+				init();
+			} else {
+				$('#actionHelp').text("Waiting for the other player.");
+			}
+		}
+
+		function init() {
+			otherGroupMemberId = getOtherGroupMemberId();
+			var myMoves = getMoves(jatos.groupMemberId);
+			var otherMoves = getMoves(otherGroupMemberId);
+			display(myMoves, otherMoves);
+		}
+
+		function getMoves(groupMemberId) {
+			var moves = jatos.groupSession.get(groupMemberId);
+			return moves ? moves : [];
+		}
+
+		function getOtherGroupMemberId() {
+			if (jatos.groupMembers.length == 2) {
+				var otherGroupMemberId = (jatos.groupMembers.indexOf(jatos.groupMemberId) == 0) ?
+					jatos.groupMembers[1] : jatos.groupMembers[0];
+				return otherGroupMemberId;
+			}
+			// The normal way is to get it from the jatos.groupMembers. There is only
+			// one possibility where this won't work: game is finished and the other
+			// Player left the group already. In this case get the ID from the
+			// group session data.
+			var groupMembers = Object.keys(jatos.groupSession.getAll());
+			if (groupMembers.length == 2) {
+				var otherGroupMemberId = (groupMembers.indexOf(jatos.groupMemberId) == 0) ?
+					groupMembers[1] : groupMembers[0];
+				return otherGroupMemberId;
+			}
+		}
+
+		// Callback function for jatos.js in case the group session changed
+		function onGroupSession() {
+			if (typeof otherGroupMemberId == 'undefined') {
+				return;
+			}
+			var myMoves = getMoves(jatos.groupMemberId);
+			var otherMoves = getMoves(otherGroupMemberId);
+			display(myMoves, otherMoves);
+		}
+
+		// Displays scores, move history, the current round, help text and buttons
+		function display(myMoves, otherMoves) {
+			calculateAndDisplayScores(myMoves, otherMoves);
+			displayMoves(myMoves, otherMoves);
+			var currentRound = getCurrentRound();
+			if (currentRound > jatos.componentJsonInput.rounds) {
+				// Game finished
+				displayFinished();
+				return;
+			}
+
+			// Game ongoing
+			$('#actionRound').text("Round " + currentRound + " of " +
+				jatos.componentJsonInput.rounds);
+			if (otherMoves.length == myMoves.length) {
+				// Both players are in the same state: make a decision
+				$('#actionHelp').text("Make your decision.");
+				switchChoiceButtons(true, true);
+			} else if (otherMoves.length > myMoves.length) {
+				// Other player did his move - I still have to move
+				$('#actionHelp').text("Make your decision.");
+				switchChoiceButtons(true, true);
+			} else if (otherMoves.length < myMoves.length) {
+				// I did my move - waiting for the other player
+				var moveText = (myMoves[myMoves.length - 1] == "D") ?
+					"defect" : "cooperate";
+				$('#actionHelp').text("Your choice is to " + moveText +
+					". Now wait for the other's decision.");
+				switchChoiceButtons(false, false);
+			}
+		}
+
+		function getCurrentRound() {
+			var myMoves = getMoves(jatos.groupMemberId);
+			var otherMoves = getMoves(otherGroupMemberId);
+			return (otherMoves.length >= myMoves.length) ?
+				myMoves.length + 1 : otherMoves.length + 1;
+		}
+
+		function displayMoves(myMoves, otherMoves) {
+			var minLength = (myMoves.length < otherMoves.length) ?
+				myMoves.length : otherMoves.length;
+			var myMovesStr = myMoves.join("").substring(0, minLength);
+			var otherMovesStr = otherMoves.join("").substring(0, minLength);
+			$('#myBox .historyValue').html(myMovesStr);
+			$('#otherBox .historyValue').html(otherMovesStr);
+		}
+
+		function calculateAndDisplayScores(myMoves, otherMoves) {
+			var scores = calculateScore(myMoves, otherMoves);
+			$('#myBox .scoreValue').html(scores.myScore);
+			$('#otherBox .scoreValue').html(scores.otherScore);
+		}
+
+		function calculateScore(myMoves, otherMoves) {
+			var myScore = 0;
+			var otherScore = 0;
+			var minLength = (myMoves.length < otherMoves.length) ?
+				myMoves.length : otherMoves.length;
+			for (i = 0; i < minLength; i++) {
+				myScore += calcScore(myMoves[i], otherMoves[i]);
+				otherScore += calcScore(otherMoves[i], myMoves[i]);
+			}
+			return {
+				"myScore": myScore,
+				"otherScore": otherScore
+			};
+		}
+
+		function calcScore(move1, move2) {
+			if (move1 == "D" && move2 == "D") {
+				return 1;
+			} else if (move1 == "D" && move2 == "C") {
+				return 5;
+			} else if (move1 == "C" && move2 == "D") {
+				return 0;
+			} else if (move1 == "C" && move2 == "C") {
+				return 3;
+			}
+		}
+
+		function switchChoiceButtons(showDefect, showCooperate) {
+			$('#defectButton').prop('disabled', !showDefect);
+			$('#cooperateButton').prop('disabled', !showCooperate);
+		}
+
+		// Called if game is finished 
+		function displayFinished() {
+			$('#actionRound').text("Round " + jatos.componentJsonInput.rounds +
+				" of " + jatos.componentJsonInput.rounds);
+			$('#actionHelp').text("Thank you! Game done.");
+			$('#defectButton').prop('disabled', true);
+			$('#cooperateButton').prop('disabled', true);
+			$('#endStudyButton').prop('disabled', false).show();
+		}
+
+		// Callback for the defect button
+		function onDefect() {
+			onMove("D");
+		}
+
+		// Callback for the cooperate button
+		function onCooperate() {
+			onMove("C");
+		}
+
+		// Put my moves into group session data and send it to the other player
+		function onMove(move) {
+			var myMoves = getMoves(jatos.groupMemberId);
+			var jsonPointer = "/" + jatos.groupMemberId;
+			if (myMoves.length > 0) {
+				// Add the move in the last position of the array
+				jatos.groupSession.add(jsonPointer + "/-", move);
+			} else {
+				// Create a new array with the move as the first element
+				jatos.groupSession.add(jsonPointer, [move]);
+			}
+		}
+
+		// Callback function for jatos.js in case the other player left the group
+		function otherPlayerLeft(memberId) {
+			var currentRound = getCurrentRound();
+			if (currentRound <= jatos.componentJsonInput.rounds) {
+				$('#actionHelp').text("The other player gave up. Game done.");
+				$('#defectButton').prop('disabled', true);
+				$('#cooperateButton').prop('disabled', true);
+				$('#endStudyButton').prop('disabled', false).show();
+			}
+		}
+
+		// Send result data to JATOS and finish this component and the study
+		function onEndStudy() {
+			var gameResults = collectGameResults();
+			var resultJson = JSON.stringify(gameResults);
+			jatos.submitResultData(resultJson).done(jatos.startNextComponent).fail(console.log);
+		}
+
+		function collectGameResults() {
+			var results = {};
+			var myData = {};
+			var otherData = {};
+			var myMoves = getMoves(jatos.groupMemberId);
+			var otherMoves = getMoves(otherGroupMemberId);
+			var scores = calculateScore(myMoves, otherMoves);
+			myData["moves"] = myMoves;
+			myData["groupMemberId"] = jatos.groupMemberId;
+			myData["score"] = scores.myScore;
+			otherData["moves"] = otherMoves;
+			otherData["groupMemberId"] = otherGroupMemberId;
+			otherData["score"] = scores.otherScore;
+			results["myData"] = myData;
+			results["otherData"] = otherData;
+			return results;
+		}
+
+		// What todo when worker presses the abort button
+		$("#quit").click(function () {
+			var answer = confirm("Do you really want to quit this study?");
+			if (answer == true) {
+				jatos.abortStudy("Worker decided to abort");
+			}
+		});
+
+		function printError(errorMsg) {
+			$('#error').text(errorMsg);
+		}
+	</script>
+</body>
+
+</html>

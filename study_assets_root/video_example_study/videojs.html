@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<link rel="stylesheet" href="/study_assets/video_example_study/css/video_example_study.css" />
+<link href="/study_assets/video_example_study/libs/video-js/video-js.css" rel="stylesheet">
+<script src="/study_assets/video_example_study/libs/video-js/video.js"></script>
+<script>
+  videojs.options.flash.swf = "/study_assets/video_example_study/libs/video-js/video-js.swf"
+</script>
+<script src="/study_assets/video_example_study/libs/jquery-1.11.1.min.js"></script>
+<script src="/assets/javascripts/jatos.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+	<div id="component">
+		<p id="error"></p>
+		<p id="text">A little Video using the <a href="http://www.videojs.com/" target="_blank">video.js</a> library</p>
+		<video id="example_video_1" class="video-js vjs-default-skin"
+				controls preload="auto" width="640" height="264"
+				data-setup='{"example_option":true}'>
+			<source src="http://download.blender.org/peach/trailer/trailer_400p.ogg" type='video/ogg' />
+			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that
+				<a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+			</p>
+		</video>
+		<p id="nextComponent">Press N to continue</p>
+	</div>
+	<p id="abort">Quit Study</p>
+
+	<script>
+		// What todo when jatos.js is finished initializing
+		jatos.onLoad(function() {
+
+			// Wait for key press and start next component
+			$(document).keydown(function(event) {
+				var keycode = (event.keyCode ? event.keyCode
+						: event.which);
+				if (keycode == '78') {
+					jatos.startNextComponent();
+				}
+			});
+
+			// What todo when worker presses the abort button
+			$("#abort").click(function() {
+				var answer = confirm("Do you really want to quit this study? "
+						+ "You will NOT RECEIVE ANY PAY for this study.");
+				if (answer == true) {
+					jatos.abortStudy("Worker decided to abort");
+				}
+			});
+		});
+
+
+	</script>
+</body>
+</html>

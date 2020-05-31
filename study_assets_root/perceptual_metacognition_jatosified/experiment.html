@@ -1,0 +1,89 @@
+<!DOCTYPE html><html class=''>
+<!-- Taken from https://expfactory.github.io/perceptual_metacognition.html -->
+<head>
+    <meta charset='UTF-8'>
+    <meta name="robots" content="noindex">
+    <title>Perceptual Metacognition</title>
+    
+<link rel='stylesheet' type='text/css' href='/study_assets/perceptual_metacognition_jatosified/static/jspsych.css'>
+<link rel='stylesheet' type='text/css' href='/study_assets/perceptual_metacognition_jatosified/static/default_style.css'>
+<link rel='stylesheet' type='text/css' href='/study_assets/perceptual_metacognition_jatosified/static/style.css'>
+</head>
+
+<body>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jquery.min.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-text.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-poldrack-text.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-poldrack-instructions.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-attention-check.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-poldrack-single-stim.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-single-stim-button.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-single-stim.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-call-function.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-survey-text.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/static/poldrack_utils.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/helpers.js'></script>
+<script src='/study_assets/perceptual_metacognition_jatosified/experiment.js'></script>
+<script src="/assets/javascripts/jatos.js"></script> 
+
+<script>
+jatos.onLoad(function() {
+
+	// Overwrite some vars defined in experiment.js with ones defined as JATOS' JsonInput
+	practice_len = jatos.componentJsonInput.practice_len;
+	exp_len = jatos.componentJsonInput.exp_len;
+	catch_trials = jatos.componentJsonInput.catch_trials;
+	fixation_block.timing_stim = jatos.componentJsonInput.fixation_block_timing_stim;
+	test_block.timing_stim = jatos.componentJsonInput.test_block_timing_stim;
+	easy_block.timing_stim = jatos.componentJsonInput.easy_block_timing_stim;
+	confidence_block.timing_stim = jatos.componentJsonInput.confidence_block_timing_stim;
+	confidence_block.timing_response = jatos.componentJsonInput.confidence_block_timing_stim;
+	confidence_key_block.timing_stim = jatos.componentJsonInput.confidence_key_block_timing_stim;
+	confidence_key_block.timing_response = jatos.componentJsonInput.confidence_key_block_timing_stim;
+
+	// Create jsPsych's timeline
+	var perceptual_metacognition_experiment = createTimeline();
+
+	expfactory_finished = false;
+
+	jsPsych.init( {
+		timeline: perceptual_metacognition_experiment,
+		display_element: "getDisplayElement",
+		fullscreen: true,
+		on_trial_finish: function(data){
+			addID('perceptual_metacognition')
+		},
+		on_finish: function(data) {
+			// Submit results to JATOS
+			var resultJson = JSON.stringify(jsPsych.data.getData());
+			expfactory_finished = true;
+			window.onunload = window.onbeforeunload = null;
+			jatos.submitResultData(resultJson, jatos.startNextComponent);
+		}
+	});
+});	
+
+// Shows a msg before closing the browser window/tab. This works in most modern
+// browsers but Firefox just shows a default message.
+window.onbeforeunload = (function() {
+	var msg = "It is important to do this experiment all at once. "
+			+ "A restart from the beginning is not allowed. "
+			+ "If you reload or close this webpage or your browser "
+			+ "the experiment will become invalid. Additionally all data "
+			+ "generated during this experiment will be deleted.";
+	return msg;
+});
+
+// Prevent Firefox' search box from interfering with your key input
+$(window).keypress(function(e) {
+	var keycode = (e.keyCode ? e.keyCode : e.which);
+	// Prevent default for keys 1, 2, 3, 4
+	if (keycode === 49 || keycode === 50 || keycode === 51 || keycode === 52) {
+		e.preventDefault();
+	}
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+body {
+	font-size: 12px;
+	margin: 0;
+	padding: 2em;
+}
+
+p {
+	margin: 0;
+	color: #222;
+}
+
+#memberCounterRow, #statusRow, #buttonRow, #memberCounterRow {
+    margin: 0 auto;
+	margin-top: 1em;
+	font-size: 2em;
+	text-align: center;
+}
+
+#memberCounter {
+	font-size: 4em;
+	font-weight: bold;
+	color: #666;
+}
+
+.buttonJoin {
+	color: white;
+    background: rgb(66, 184, 221); /* this is a light blue */
+}
+
+.buttonLeave {
+	color: white;
+    background: rgb(223, 117, 20); /* this is orange */
+	display: none;
+}
+
+.buttonReady {
+	color: white;
+    background: rgb(28, 184, 65); /* this is a light green */
+}
+
+#quit {
+	font-size: 2em;
+	cursor:pointer;
+	padding: 0;
+	margin: 2em 0 0 2em;
+	position:absolute;
+	bottom: 1em;
+	right: 1em;
+}
+
+

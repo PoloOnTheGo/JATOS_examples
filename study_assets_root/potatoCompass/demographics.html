@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="shortcut icon" type="image/png" href="/study_assets/potatoCompass/images/favicon.png">
+	<link rel="stylesheet" href="/study_assets/potatoCompass/libs/jquery-ui-1.11.4.custom_darkhive/jquery-ui.min.css" />
+	<link rel="stylesheet" href="/study_assets/potatoCompass/libs/pure-release-0.6.0/pure-min.css">
+	<link rel="stylesheet" href="/study_assets/potatoCompass/css/demographics.css" />
+	<script src="/assets/javascripts/jatos.js"></script>
+	<script src="/study_assets/potatoCompass/libs/jquery-1.11.1.min.js"></script>
+	<script src="/study_assets/potatoCompass/libs/jquery-ui-1.11.4.custom_darkhive/jquery-ui.min.js"></script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+	<div id="component">
+		<div id="error"></div>
+		<p id="text">Please tell us something about yourself. With * marked fields are required.</p>
+		<form id="personalDataForm">
+			<div class="pure-g">
+				<div class="pure-u-1-3">
+					<p class="form-label" for="genderButtonset">Gender*</p>
+				</div>
+				<div class="pure-u-2-3">
+					<div id="genderButtonset">
+						<input type="radio" id="female" name="gender">
+						<label for="female" role="button">Female</label>
+						<input type="radio" id="male" name="gender">
+						<label for="male" role="button">Male</label>
+						<input type="radio" id="other" name="gender">
+						<label for="other" role="button">Other</label>
+					</div>
+				</div>
+				<div class="pure-u-1-3">
+					<p class="form-label" for="nameInput">Name*</p>
+				</div>
+				<div class="pure-u-2-3">
+					<input class="ui-widget ui-state-default ui-corner-all form-input" id="nameInput" type="text" name="name">
+				</div>
+				<div class="pure-u-1-3">
+					<p class="form-label" for="birthDatepicker">Birthday</p>
+				</div>
+				<div class="pure-u-2-3">
+					<input class="ui-widget ui-state-default ui-corner-all form-input" id="birthDatepicker" type="text" name="birthdate">
+				</div>
+				<div class="pure-u-1-3">
+					<p class="form-label" for="ageSpinner">Age*</p>
+				</div>
+				<div class="pure-u-2-3">
+					<input class="ui-widget ui-state-default ui-corner-all" id="ageSpinner" type="text" name="age">
+				</div>
+				<div class="pure-u-1-3">
+					<p class="form-label" for="countrySelectmenu">Country*</p>
+				</div>
+				<div class="pure-u-2-3">
+					<select class="ui-widget" name="country" id="countrySelectmenu">
+					<!-- It's filled with countries in JavaScript -->
+					</select>
+				</div>
+				<div class="pure-u-1-3">
+				</div>
+				<div class="pure-u-2-3">
+					<input class="ui-widget ui-button ui-state-default ui-corner-all form-item" type="submit" value="Submit">
+				</div>
+			</div>
+		</form>
+	</div>
+	<p id="abort" title="If you quit your results will be deleted and you won't get paid.">Quit Study</p>
+
+	<script>
+		var componentResultData = {};
+
+		// Executed right after the page was rendered
+		$(function() {
+			initJQueryUiItems();
+		});
+
+		function initJQueryUiItems() {
+			$("#genderButtonset").buttonset();
+			$("#birthDatepicker").datepicker();
+			$("#ageSpinner").spinner({
+				numberFormat: "n",
+				min: 0,
+				max: 120
+			});
+			$(document).tooltip();
+		}
+
+		// What todo when jatos.js is finished loading
+		jatos.onLoad(function() {
+			startComponent();
+		});
+
+		// What todo when jatos.js produces an error
+		jatos.onError(function(errorMsg) {
+			showError(errorMsg);
+		});
+
+		// What todo when worker presses the abort button
+		$("#abort").click(function() {
+			var answer = confirm("Do you really want to quit this study? "
+					+ "You will NOT RECEIVE ANY PAY for this study.");
+			if (answer == true) {
+				jatos.abortStudy("Worker decided to abort");
+			}
+		});
+
+		function startComponent() {
+			initCountries();
+			addSubmitEvent();
+		}
+
+		function initCountries() {
+			// We have to wait until jatos.js is finished loading so we can
+			// access the countries in jatos.componentJsonInput
+			$.each(jatos.componentJsonInput.countries, function(i, country) {
+				$('#countrySelectmenu').append($('<option>', {
+					value: country,
+					text : country 
+				}));
+			});
+			$("#countrySelectmenu").selectmenu().selectmenu("menuWidget").addClass("overflow");
+		}
+
+
+		// Add a listener to the submit botton (Add submit listener not until
+		// the form was fully rendered to prevent premature submitting)
+		function addSubmitEvent() {
+			$("#personalDataForm").submit(function( event ) {
+
+				// Prevent normal submit listener call
+				event.preventDefault();
+
+				// Validate form entries before submitting
+				if (!validateForm()) {
+					return;
+				}
+
+				fillResultData();
+				endComponentAndNext();
+			});
+		}
+
+		function validateForm() {
+			if ($("#genderButtonset :radio:checked + label").text().length === 0) {
+				showError("Please choose a gender!");
+				return false;
+			}
+			if ($("#nameInput").val().length === 0) {
+				showError("Please enter your name!");
+				return false;
+			}
+			if ($("#nameInput").val().search(/^[a-zA-Z\s]+$/) === -1) {
+				showError("Your name should only contain letters!");
+				return false;
+			}
+			if ($("#ageSpinner").val().length === 0) {
+				showError("Please enter your age!");
+				return false;
+			}
+			if ($("#ageSpinner").val().search(/^[0-9]+$/) === -1) {
+				showError("Your age should be a number!");
+				return false;
+			}
+			if ($("#countrySelectmenu").val() === "select one") {
+				showError("Please select a country!");
+				return false;
+			}
+			return true;
+		}
+
+		// Put form entries into the result data that will be sent back
+		function fillResultData() {
+			componentResultData.gender = $("#genderButtonset :radio:checked + label").text();
+			componentResultData.country = $("#countrySelectmenu").val();
+			componentResultData.fullname = $("#nameInput").val();
+			componentResultData.birthdate = $("#birthDatepicker").val();
+			componentResultData.age = $("#ageSpinner").val();
+		}
+
+		function endComponentAndNext() {
+			var resultDataAsStr = JSON.stringify(componentResultData);
+			// Post results back to the server and move to the next component
+			jatos.submitResultData(resultDataAsStr, jatos.startNextComponent, showError);
+		}
+
+		function showError(errorMsg) {
+			$("#error").html(errorMsg).show();
+		}
+	</script>
+</body>
+
+</html>

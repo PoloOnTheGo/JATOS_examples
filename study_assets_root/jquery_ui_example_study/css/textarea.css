@@ -1,0 +1,15 @@
+#submitButton {
+	text-align: center;
+}
+
+#littleStory {
+	margin-bottom: 10px;
+	width: 100%;
+	height: 16em;
+}
+
+#dialogText {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}

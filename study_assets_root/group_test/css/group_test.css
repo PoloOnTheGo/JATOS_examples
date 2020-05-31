@@ -1,0 +1,33 @@
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color: #eee;
+}
+
+#content {
+	padding-left: 2em;
+	padding-right: 2em;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#history {
+	overflow-y: scroll;
+	margin-top: 10px;
+	height: 400px;
+	background-color: #fff;
+}
+
+#history li {
+	list-style-type: none;
+}
+
+#sendMsgForm {
+	margin-top: 10px;
+}
+
+#endStudyButton {
+	margin-top: 50px;
+	bottom: 1em;
+	left: 2em;
+}

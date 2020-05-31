@@ -1,0 +1,23 @@
+<html>
+
+<head>
+    <script src="jatos.js"></script>
+</head>
+
+<body>
+    <img id="canvasimg" style="position:absolute;top:10%;left:10%;border:2px solid;"></img>
+    <button onclick="download()" style="position:absolute;top:55%;left:10%;">Download</button>
+    <button onclick="jatos.startNextComponent()" style="position:absolute;top:55%;left:15%;">End</button>
+
+    <script type="text/javascript">
+
+        function download() {
+            jatos.downloadResultFile("canvas.png").done((blob) => {
+                document.getElementById("canvasimg").src = URL.createObjectURL(blob);
+            });
+        }
+
+    </script>
+</body>
+
+</html>

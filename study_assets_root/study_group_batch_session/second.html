@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/study_assets/study_group_batch_session/libs/pure-release-0.6.0/pure-min.css">
+    <link rel="stylesheet" type="text/css" href="/study_assets/study_group_batch_session/css/second.css" />
+    <script src="/study_assets/study_group_batch_session/libs/jquery-3.1.1.min.js"></script>
+    <script src="/assets/javascripts/jatos.js"></script>
+</head>
+
+<body>
+
+    <div class="pure-g">
+        <div id="groupSession" class="pure-u-2-5">
+            <h2>Group Session</h2>
+            <p>Exchange and temporarily store data relevant for all members of a group</p>
+            <div class="chatHistory">
+                <ul></ul>
+            </div>
+            <form class="pure-form">
+                <input type="text" class="pure-input-2-3" placeholder="Your message ...">
+                <button class="pure-button pure-button-primary" type='button'>Send</button>
+            </form>
+        </div>
+        <div id="studyInfo" class="pure-u-1-5">
+            <h2>&nbsp;</h2>
+            <p>&nbsp;</p>
+            <p id="studyInfoText"></p>
+            <button id="clearGroupSessionButton" class="pure-button pure-button-primary" onclick="">Clear Group Session</button>
+            <button id="clearBatchSessionButton" class="pure-button pure-button-primary" onclick="">Clear Batch Session</button>
+        </div>
+        <div id="batchSession" class="pure-u-2-5">
+            <h2>Batch Session</h2>
+            <p>Exchange and store data relevant for all members of a batch</p>
+            <div class="chatHistory">
+                <ul></ul>
+            </div>
+            <form class="pure-form" action="#">
+                <input type="text" class="pure-input-2-3" placeholder="Your message ...">
+                <button class="pure-button pure-button-primary" type='button'>Send</button>
+            </form>
+        </div>
+    </div>
+    <div id="endButton">
+        <button class="pure-button pure-button-primary" onclick="endStudy()">End</button>
+    </div>
+
+    <script type="text/javascript">
+        var defaultColor = "#aaa";
+        var errorColor = "#f00";
+
+        jatos.onLoad(function () {
+            // Unlike with the batch session to use the group session we have to join a group first
+            jatos.joinGroup({
+                "onOpen": onGroupOpen,
+                "onGroupSession": onGroupSession,
+                "onUpdate": onGroupUpdate
+            });
+            printOldBatchSessionMsgs();
+            writeStudyInfo();
+        });
+
+        // ###############################
+        // ### Group session functions ###
+        // ###############################
+
+        // What to do when the group initially opened
+        function onGroupOpen() {
+            printOldGroupSessionMsgs();
+            writeStudyInfo();
+        }
+
+        function printOldGroupSessionMsgs() {
+            clearHistory("#groupSession .chatHistory");
+            var chatHistory = jatos.groupSession.getAll();
+            // JS objects have no order so we have to sort the chat messages's timestamps
+            var orderedTimestamps = Object.keys(chatHistory).sort();
+            orderedTimestamps.forEach(function (tsTimestamp) {
+                var chatBundle = chatHistory[tsTimestamp];
+                var timestamp = tsTimestamp.split('ts')[1];
+                appendChatBundleToHistory(timestamp, chatBundle, "#groupSession .chatHistory");
+            });
+            appendToHistory("--- new messages ---", defaultColor, "#groupSession .chatHistory");
+        }
+
+        function onGroupUpdate() {
+            writeStudyInfo();
+        }
+
+        // This function is called by jatos.js whenever a message via the group session is received. 
+        // The parameter 'path' points us to the location of the change within the group session.
+        // The parameter 'op' represents the patch operation.
+        // More info about JSON pointer: http://jsonpatch.com/.
+        function onGroupSession(path, op) {
+            if (op == "remove") {
+                clearHistory("#groupSession .chatHistory");
+                return;
+            }
+
+            // JS objects have no order so we have to sort the history's timestamps
+            var chatBundle = jatos.groupSession.find(path);
+            if (chatBundle) {
+                // The path actually contains the time when the message was put into the group session
+                var timestamp = path.split('/ts')[1];
+                appendChatBundleToHistory(timestamp, chatBundle, "#groupSession .chatHistory");
+            }
+        }
+
+        // Get the 'enter' key press in the input field
+        $('#groupSession input').keypress(function (event) {
+            // Check for 'Enter' button press
+            if (event.which == 13) {
+                event.preventDefault();
+                // Treat it as if the send button was clicked.
+                $("#groupSession button").click();
+            }
+        });
+
+        // Treat the group session 'Send' button
+        $('#groupSession button').click(function () {
+            var msg = $('#groupSession input').val();
+            if (!msg.trim()) {
+                return;
+            }
+
+            // Create an object that will be put into the group session.
+            // Get the worker's name from the study session (from the first compontent).
+            var chatBundle = {
+                "msg": msg,
+                "name": jatos.studySessionData.workerName
+            };
+            // Use the timestamp (current date and time) as the object's path in the group session.
+            var timestamp = new Date().getTime();
+            var pointer = "/ts" + timestamp.toString();
+            // Add the chatBundle object to the group session using the timestamp as the key
+            jatos.groupSession.add(pointer, chatBundle).fail(function () {
+                appendToHistory("An error occured: group session synchronization failed", errorColor,
+                    "#groupSession .chatHistory");
+            });
+            $('#groupSession input').val("");
+        });
+
+        $('#clearGroupSessionButton').click(function () {
+            jatos.groupSession.clear();
+            clearHistory("#groupSession .chatHistory");
+        });
+
+
+        // ###############################
+        // ### Batch session functions ###
+        // ###############################
+
+
+        // This function is called by jatos.js whenever a message via the batch session is received. 
+        // The parameter 'path' points us to the location of the change within the batch session.
+        // The parameter 'op' represents the patch operation.
+        // More info about JSON pointer: http://jsonpatch.com/.
+        jatos.onBatchSession(function (path, op) {
+            if (op == "remove") {
+                clearHistory("#batchSession .chatHistory");
+                return;
+            }
+            
+            // Use the path to get the new message from the batch session
+            var chatBundle = jatos.batchSession.find(path);
+            if (chatBundle) {
+                // The path contains the time when the message was put into the batch session
+                var timestamp = path.split('/ts')[1];
+                appendChatBundleToHistory(timestamp, chatBundle, "#batchSession .chatHistory");
+            }
+        });
+
+        function printOldBatchSessionMsgs() {
+            clearHistory("#batchSession .chatHistory");
+            var chatHistory = jatos.batchSession.getAll();
+            // JS objects have no order so we have to sort the chat messages's timestamps
+            var orderedTimestamps = Object.keys(chatHistory).sort();
+            orderedTimestamps.forEach(function (tsTimestamp) {
+                var chatBundle = chatHistory[tsTimestamp];
+                var timestamp = tsTimestamp.split('ts')[1];
+                appendChatBundleToHistory(timestamp, chatBundle, "#batchSession .chatHistory");
+            });
+            appendToHistory("--- new messages ---", defaultColor, "#batchSession .chatHistory");
+        }
+
+        // Get the 'enter' key press in the input field
+        $('#batchSession input').keypress(function (event) {
+            // Check for 'Enter' button press
+            if (event.which == 13) {
+                event.preventDefault();
+                // Treat it as if the send button was clicked.
+                $("#batchSession button").click();
+            }
+        });
+
+        $('#batchSession button').click(function () {
+            var msg = $('#batchSession input').val();
+            if (!msg.trim()) {
+                return;
+            }
+
+            // Create an object that will be put into the batch session.
+            // Get the worker's name from the study session (from the first compontent).
+            var chatBundle = {
+                "msg": msg,
+                "name": jatos.studySessionData.workerName
+            };
+            // Use the timestamp (current date and time) as the object's path in the batch session.
+            var timestamp = new Date().getTime();
+            var pointer = "/ts" + timestamp.toString();
+            // Add the chatBundle object to the batch session using the timestamp as the key
+            jatos.batchSession.add(pointer, chatBundle).fail(function () {
+                appendToHistory("An error occured: batch session synchronization failed", errorColor,
+                    "#batchSession .chatHistory");
+            });
+            $('#batchSession input').val("");
+        });
+
+        $('#clearBatchSessionButton').click(function () {
+            jatos.batchSession.clear();
+            clearHistory("#batchSession .chatHistory");
+        });
+
+
+        // #################
+        // ### End study ###
+        // #################
+
+        function endStudy() {
+            // Put study, group, and batch session in the result data
+            var resultData = {};
+            resultData.studySessionData = jatos.studySessionData;
+            resultData.groupSessionData = jatos.groupSession.getAll();
+            resultData.batchSessionData = jatos.batchSession.getAll();
+            jatos.addJatosIds(resultData);
+            var resultDataStr = JSON.stringify(resultData);
+            jatos.submitResultData(resultDataStr).done(jatos.endStudy);
+        }
+
+
+        // ########################
+        // ### Helper functions ###
+        // ########################
+
+        function appendChatBundleToHistory(timestamp, chatBundle, selector) {
+            if (typeof timestamp != 'string' || typeof chatBundle != 'object' ||
+                typeof chatBundle.name != 'string' || typeof chatBundle.msg != 'string') {
+                return;
+            }
+            var dateTime = getDateAsString(new Date(parseInt(timestamp)));
+            var msgText = dateTime + " - " + chatBundle.name + ": " + chatBundle.msg;
+            var color = stringToColour(chatBundle.name);
+            appendToHistory(msgText, color, selector);
+        }
+
+        function appendToHistory(text, color, selector) {
+            $(selector + " ul").append('<li>' + text + '</li>');
+            $(selector + " li").last().css('color', color);
+            // Scroll to bottom
+            $(selector).scrollTop($(selector)[0].scrollHeight);
+        }
+
+        function clearHistory(selector) {
+            $(selector + " ul").empty();
+            //appendToHistory("--- cleared ---", defaultColor, selector);
+        }
+
+        function writeStudyInfo() {
+            var studyInfo = "Study ID: " + jatos.studyId + "<br>" +
+                "Component ID: " + jatos.componentId + "<br>" +
+                "Worker ID: " + jatos.workerId + "<br>" +
+                "Group ID: " + jatos.groupResultId + "<br>" +
+                "Batch ID: " + jatos.batchId + "<br>" +
+                "Group Member ID: " + jatos.groupMemberId + "<br>" +
+                "Group member: " + jatos.groupMembers.length + "/" + jatos.batchProperties.maxTotalMembers;
+            $('#studyInfoText').html(studyInfo);
+        }
+
+        // A function that uses a string as a seed to generate a pseudo-random color
+        function stringToColour(str) {
+            var seed = 0;
+            for (i = 0; i < str.length; i++) {
+                seed += str.charCodeAt(i);
+            }
+            var color = Math.floor((Math.abs(Math.sin(parseInt(seed)) * 16777215)) % 16777215).toString(16);
+            return "#" + color;
+        }
+
+        // Generates a nicely formatted date and time string 
+        function getDateAsString(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            var hours = ("0" + date.getHours()).slice(-2);
+            var minutes = ("0" + date.getMinutes()).slice(-2);
+            var seconds = ("0" + date.getSeconds()).slice(-2);
+            return year + "/" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds;
+        }
+    </script>
+
+</body>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="libs/jquery-1.11.1.min.js"></script>
+    <script src="jatos.js"></script>
+</head>
+
+<body>
+    <button id="startNextComponent" onclick="jatos.startNextComponent(' ... append before jatos.startNextComponent', 'msg via message parameter')">jatos.startNextComponent</button>
+    <button id="startLastComponent" onclick="jatos.startLastComponent(' ... append before jatos.startLastComponent', 'msg via message parameter')">jatos.startLastComponent</button>
+    <button id="startComponentByPos" onclick="jatos.startComponentByPos(1, ' ... append before jatos.startComponentByPos', 'msg via message parameter')">jatos.startComponentByPos</button>
+    <button id="abortStudyAjax" onclick="jatos.abortStudyAjax('Test study was aborted via an Ajax call')">jatos.abortStudyAjax</button>
+    <button id="abortStudy" onclick="jatos.abortStudy('Test study was aborted')">jatos.abortStudy</button>
+    <button id="endStudyAjax" onclick="jatos.endStudyAjax({obj:'endStudyAjax append'}, true, 'Test study was finished via Ajax')">jatos.endStudyAjax</button>
+    <button id="endStudyNoShowEndPage" onclick="jatos.endStudy({obj:'endStudy noshowendpage append'}, true, 'Test study was finished via Ajax and no end page shown', false)">jatos.endStudy no end page</button>
+    <button id="endStudy" onclick="jatos.endStudy({obj:'endStudy append'}, true, 'Test study was finished')">jatos.endStudy</button>
+    <button id="endStudy" onclick="jatos.endStudyAndRedirect('http\:\/\/jatos.org', {obj:'endStudyAndRedirect append'}, true, 'Test study was finished')">jatos.endStudyAndRedirect</button>
+    <p class="test">Loading study assets with absolute path: <img src="Yes_Check_Circle.png" alt="Not loaded img with absolute path" height="42" width="42"></p>
+    <p class="test">Loading study assets with relative path: <img src="Yes_Check_Circle.png" alt="Not loaded img with absolute path" height="42" width="42"></p>
+
+    <script type="text/javascript">
+        jatos.addAbortButton({
+            text: "Quit",
+            confirm: true,
+            confirmText: "You really wanne quit?",
+            tooltip: "Don't you dare clicking here!",
+            msg: "This bastard aborted the mission.",
+            style: "color:green"
+        });
+
+        jatos.onLoad(async function () {
+            testJatosVars();
+            testBatchSession();
+            testGroupSession();
+            await testSubmitResultData();
+            await testAppendResultData();
+            testJatosLog();
+            await testUpload();
+            await testDownload();
+            await testSetStudySessionData();
+            testHttpLoopCounter();
+            checkTestNumber();
+        });
+
+        function testJatosVars() {
+            testVar(jatos.version, "jatos.version");
+            testVar(jatos.httpTimeout, "jatos.httpTimeout", 15000);
+            testVar(jatos.httpRetry, "jatos.httpRetry", 5);
+            testVar(jatos.httpRetryWait, "jatos.httpRetryWait", 1000);
+            testVarJson(jatos.studyJsonInput, "jatos.studyJsonInput",
+                '{"sa":"test","sb":5,"sc":[1,2,3],"sd":{"se":"foo","sf":"bla"}}');
+            testVar(jatos.studyLength, "jatos.studyLength", 1);
+            testVar(jatos.studyProperties.id, "jatos.studyProperties.id");
+            testVar(jatos.studyProperties.uuid, "jatos.studyProperties.uuid", "79d0a52a-d5d3-4461-9d9b-6fd9f386c04a");
+            testVar(jatos.studyProperties.description, "jatos.studyProperties.description",
+                "Tests for JATOS' jatos.js development");
+            testVar(jatos.studyProperties.descriptionHash, "jatos.studyProperties.descriptionHash",
+                "a7da5fc6d901a2f7d9a1b95d62843f62fec9e913d1e3e359721a60203ea31dac");
+            testVar(jatos.studyProperties.dirName, "jatos.studyProperties.dirName", "jatosjs_test_study");
+            testVar(jatos.studyProperties.groupStudy, "jatos.studyProperties.groupStudy", true);
+            testVar(jatos.studyProperties.locked, "jatos.studyProperties.locked", false);
+            testVar(jatos.studyProperties.title, "jatos.studyProperties.title", "jatos.js Test Study");
+            testVarJson(jatos.studySessionData, "jatos.studySessionData");
+            jatos.componentList.length === 1 ? addSuccess("jatos.componentList") : addFail("jatos.componentList");
+            testVarJson(jatos.componentJsonInput, "jatos.componentJsonInput",
+                '{"ca":"test","cb":5,"cc":[1,2,3],"cd":{"ce":"foo","cf":"bla"}}');
+            testVar(jatos.componentPos, "jatos.componentPos", 1);
+            testVar(jatos.componentProperties.id, "jatos.componentProperties.id");
+            testVar(jatos.componentProperties.uuid, "jatos.componentProperties.uuid",
+                "15287b49-d9e1-4d20-85c8-a412c9ac2075");
+            testVar(jatos.componentProperties.title, "jatos.componentProperties.title", "Tests");
+            testVar(jatos.componentProperties.htmlFilePath, "jatos.componentProperties.htmlFilePath", "tests.html");
+            testVar(jatos.componentProperties.reloadable, "jatos.componentProperties.reloadable", true);
+            testVar(jatos.batchProperties.id, "jatos.batchProperties.id");
+            testVar(jatos.batchProperties.title, "jatos.batchProperties.title", "Default");
+            testVar(jatos.batchProperties.maxActiveMembers, "jatos.batchProperties.maxActiveMembers", 1);
+            testVar(jatos.batchProperties.maxTotalMembers, "jatos.batchProperties.maxTotalMembers", null);
+            testVar(jatos.batchProperties.maxTotalWorkers, "jatos.batchProperties.maxTotalWorkers", null);
+            testVarJson(jatos.batchProperties.allowedWorkerTypes, "jatos.batchProperties.allowedWorkerTypes",
+                '["PersonalSingle","Jatos","PersonalMultiple"]');
+            testVarJson(jatos.batchJsonInput, "jatos.batchJsonInput",
+                '{"a":"test","b":5,"c":[1,2,3],"d":{"e":"foo","f":"bla"}}');
+            testVarJson(jatos.groupMemberId, "jatos.groupMemberId");
+            testVarJson(jatos.groupResultId, "jatos.groupResultId");
+            testVarJson(jatos.groupMembers, "jatos.groupMembers");
+            testVarJson(jatos.groupChannels, "jatos.groupChannels");
+            testVar(jatos.channelSendingTimeoutTime, "jatos.channelSendingTimeoutTime", 10000);
+            testVarJson(jatos.jQuery, "jatos.jQuery");
+            testVarJson(jatos.batchSession, "jatos.batchSession");
+            testVarJson(jatos.groupSession, "jatos.groupSession", "{}");
+        }
+
+        function testVarJson(variable, name, value) {
+            if (typeof value == 'undefined' && typeof variable == 'undefined') {
+                addFail(name);
+            } else if (typeof value != 'undefined' && value !== JSON.stringify(variable)) {
+                addFail(name);
+            } else {
+                addSuccess(name);
+            }
+        }
+
+        function testVar(variable, name, value) {
+            if (typeof value == 'undefined' && typeof variable == 'undefined') {
+                addFail(name, variable);
+            } else if (typeof value != 'undefined' && value !== variable) {
+                addFail(name, variable);
+            } else {
+                addSuccess(name);
+            }
+        }
+
+        function addFail(name, variable) {
+            if (variable) {
+                $('body').append('<p class="test">' + name + ': <font color="red">KO (' + variable + ')</font></p>');
+            } else {
+                $('body').append('<p class="test">' + name + ': <font color="red">KO</font></p>');
+            }
+        }
+
+        function addSuccess(name) {
+            $('body').append('<p class="test">' + name + ': <font color="green">OK</font></p>');
+        }
+
+        function testBatchSession() {
+            var onBatchSessionTest = false;
+            jatos.onBatchSession(function (path) {
+                onBatchSessionTest = true;
+            });
+
+            // clear
+            $.when(jatos.batchSession.clear()).then(function () {
+                var test = jatos.batchSession.getAll();
+                testVarJson(test, "jatos.batchSession.clear", '{}');
+                return $.Deferred().resolve().promise();
+
+                // set
+            }).then(function () {
+                return jatos.batchSession.set("a", "foo");
+            }).then(function () {
+                var test = jatos.batchSession.test("/a", "foo");
+                testVarJson(test, "jatos.batchSession.set", "true");
+                return $.Deferred().resolve().promise();
+
+                // setAll
+            }).then(function () {
+                return jatos.batchSession.setAll({
+                    "a": "foo",
+                    "a2": "foo2"
+                });
+            }).then(function () {
+                var test = jatos.batchSession.test("/a", "foo") && jatos.batchSession.test("/a2", "foo2");
+                testVarJson(test, "jatos.batchSession.setAll", "true");
+                return $.Deferred().resolve().promise();
+
+                // add
+            }).then(function () {
+                return jatos.batchSession.add("/b", 123);
+            }).then(function () {
+                var test = jatos.batchSession.test("/b", 123);
+                testVarJson(test, "jatos.batchSession.add", "true");
+                return $.Deferred().resolve().promise();
+
+                // get
+            }).then(function () {
+                var test = jatos.batchSession.get("a");
+                testVarJson(test, "jatos.batchSession.get", '"foo"');
+                return $.Deferred().resolve().promise();
+
+                // find
+            }).then(function () {
+                var test = jatos.batchSession.find("/a");
+                testVarJson(test, "jatos.batchSession.find", '"foo"');
+                return $.Deferred().resolve().promise();
+
+                // defined
+            }).then(function () {
+                var test = jatos.batchSession.defined("/a");
+                testVarJson(test, "jatos.batchSession.defined", "true");
+                return $.Deferred().resolve().promise();
+
+                // getAll
+            }).then(function () {
+                var test = jatos.batchSession.getAll();
+                testVarJson(test, "jatos.batchSession.getAll", '{"a":"foo","a2":"foo2","b":123}');
+                return $.Deferred().resolve().promise();
+
+                // replace
+            }).then(function () {
+                return jatos.batchSession.replace("/a", "bla");
+            }).then(function () {
+                var test = jatos.batchSession.test("/a", "bla");
+                testVarJson(test, "jatos.batchSession.replace", "true");
+                return $.Deferred().resolve().promise();
+
+                // copy
+            }).then(function () {
+                return jatos.batchSession.copy("/a", "/c");
+            }).then(function () {
+                var test = jatos.batchSession.test("/a", "bla") && jatos.batchSession.test("/c", "bla");
+                testVarJson(test, "jatos.batchSession.copy", "true");
+                return $.Deferred().resolve().promise();
+
+                // move
+            }).then(function () {
+                return jatos.batchSession.move("/c", "/d");
+            }).then(function () {
+                var test = !jatos.batchSession.defined("/c") && jatos.batchSession.test("/d", "bla");
+                testVarJson(test, "jatos.batchSession.move", "true");
+                return $.Deferred().resolve().promise();
+
+                // remove
+            }).then(function () {
+                return jatos.batchSession.remove("/a");
+            }).then(function () {
+                var test = jatos.batchSession.test("/a", "foo");
+                testVarJson(test, "jatos.batchSession.remove", "false");
+                return $.Deferred().resolve().promise();
+
+                // onBatchSession
+            }).then(function () {
+                testVarJson(onBatchSessionTest, "jatos.onBatchSession", "true");
+                return $.Deferred().resolve().promise();
+
+            }).fail(function () {
+                addFail("jatos.batchSession");
+            });
+
+        }
+
+        function testGroupSession() {
+            // join group
+            $.when(jatos.joinGroup()
+
+                // clear
+            ).then(function () {
+                return jatos.groupSession.clear();
+            }).then(function () {
+                var test = jatos.groupSession.getAll();
+                testVarJson(test, "jatos.groupSession.clear", '{}');
+                return $.Deferred().resolve().promise();
+
+                // set
+            }).then(function () {
+                return jatos.groupSession.set("a", "foo");
+            }).then(function () {
+                var test = jatos.groupSession.test("/a", "foo");
+                testVarJson(test, "jatos.groupSession.set", "true");
+                return $.Deferred().resolve().promise();
+
+                // setAll
+            }).then(function () {
+                return jatos.groupSession.setAll({
+                    "a": "foo",
+                    "a2": "foo2"
+                });
+            }).then(function () {
+                var test = jatos.groupSession.test("/a", "foo") && jatos.groupSession.test("/a2", "foo2");
+                testVarJson(test, "jatos.groupSession.set", "true");
+                return $.Deferred().resolve().promise();
+
+                // add
+            }).then(function () {
+                return jatos.groupSession.add("/b", 123);
+            }).then(function () {
+                var test = jatos.groupSession.test("/b", 123);
+                testVarJson(test, "jatos.groupSession.add", "true");
+                return $.Deferred().resolve().promise();
+
+                // get
+            }).then(function () {
+                var test = jatos.groupSession.get("a");
+                testVarJson(test, "jatos.groupSession.get", '"foo"');
+                return $.Deferred().resolve().promise();
+
+                // find
+            }).then(function () {
+                var test = jatos.groupSession.find("/a");
+                testVarJson(test, "jatos.groupSession.find", '"foo"');
+                return $.Deferred().resolve().promise();
+
+                // defined
+            }).then(function () {
+                var test = jatos.groupSession.defined("/a");
+                testVarJson(test, "jatos.groupSession.defined", "true");
+                return $.Deferred().resolve().promise();
+
+                // getAll
+            }).then(function () {
+                var test = jatos.groupSession.getAll();
+                testVarJson(test, "jatos.batchSession.getAll", '{"a":"foo","a2":"foo2","b":123}');
+                return $.Deferred().resolve().promise();
+
+                // replace
+            }).then(function () {
+                return jatos.groupSession.replace("/a", "bla");
+            }).then(function () {
+                var test = jatos.groupSession.test("/a", "bla");
+                testVarJson(test, "jatos.groupSession.replace", "true");
+                return $.Deferred().resolve().promise();
+
+                // copy
+            }).then(function () {
+                return jatos.groupSession.copy("/a", "/c");
+            }).then(function () {
+                var test = jatos.groupSession.test("/a", "bla") && jatos.groupSession.test("/c", "bla");
+                testVarJson(test, "jatos.groupSession.copy", "true");
+                return $.Deferred().resolve().promise();
+
+                // move
+            }).then(function () {
+                return jatos.groupSession.move("/c", "/d");
+            }).then(function () {
+                var test = !jatos.groupSession.defined("/c") && jatos.groupSession.test("/d", "bla");
+                testVarJson(test, "jatos.groupSession.move", "true");
+                return $.Deferred().resolve().promise();
+
+                // remove
+            }).then(function () {
+                return jatos.groupSession.remove("/a");
+            }).then(function () {
+                var test = jatos.groupSession.test("/a", "foo");
+                testVarJson(test, "jatos.groupSession.remove", "false");
+                return $.Deferred().resolve().promise();
+
+                // Leave group
+            }).then(function () {
+                return jatos.leaveGroup();
+
+            }).fail(function () {
+                addFail("jatos.groupSession");
+            });
+        }
+
+        async function testSubmitResultData() {
+            jatos.submitResultData("submit (this should be overwritten)");
+            return jatos.submitResultData("submit (this should be overwritten)")
+                .fail(function () {
+                    addFail("jatos.submitResultData (deferred)");
+                })
+                .done(async function () {
+                    var obj = {
+                        "obj": "submit"
+                    };
+                    await jatos.submitResultData(obj)
+                        .done(function () {
+                            addSuccess("jatos.submitResultData (deferred)");
+                        }).fail(function () {
+                            addFail("jatos.submitResultData (deferred)");
+                        });
+                });
+        }
+
+        async function testAppendResultData() {
+            jatos.appendResultData(" ... append 1");
+            jatos.appendResultData(" ... append 2");
+            jatos.appendResultData(" ... append 3");
+            jatos.appendResultData(" ... append 4");
+            jatos.appendResultData(" ... append 5");
+            jatos.appendResultData(" ... append 6");
+            jatos.appendResultData(" ... append 7");
+            jatos.appendResultData(" ... append 8");
+            jatos.appendResultData(" ... append 9");
+            return jatos.appendResultData(" ... append 10 ... ")
+                .fail(function () {
+                    addFail("jatos.appendResultData (deferred)");
+                })
+                .done(async function () {
+                    var obj = {
+                        "obj": "append 7"
+                    };
+                    await jatos.appendResultData(obj)
+                        .done(function () {
+                            addSuccess("jatos.appendResultData (deferred)");
+                        })
+                        .fail(function () {
+                            addFail("jatos.appendResultData (deferred)");
+                        });
+                });
+        }
+
+        function testSetStudySessionData() {
+            var test = {
+                "a": "foo",
+                "b": 123
+            };
+            return jatos.setStudySessionData(test)
+                .done(function () {
+                    addSuccess("jatos.setStudySessionData (deferred)");
+                }).fail(function () {
+                    addFail("jatos.setStudySessionData (deferred)");
+                });
+        }
+
+        function testAbortStudyAjax() {
+            jatos.abortStudyAjax("Let us abort the study")
+                .done(function () {
+                    addSuccess("jatos.abortStudyAjax (deferred)");
+                }).fail(function () {
+                    addFail("jatos.abortStudyAjax (deferred)");
+                });
+        }
+
+        async function testUpload() {
+            return fetch("example.video")
+                .then(async function(response) {
+                    await response.blob().then(async function (blob) {
+                        await $.when(
+                            jatos.uploadResultFile(blob, "example.video"),
+                            jatos.uploadResultFile({ a: 1, b: "foo" }, "example.json"),
+                            jatos.uploadResultFile("foobar", "example.txt"),
+                        )
+                            .done(() => addSuccess("jatos.uploadResultFile (deferred)"))
+                            .fail(() => addFail("jatos.uploadResultFile (deferred)"))
+                            .promise();
+                    });
+                })
+                .catch(() => {
+                    addFail("jatos.uploadResultFile (deferred)");
+                    addFail("jatos.downloadResultFile (deferred)")
+                });
+        }
+
+        function testDownload() {
+            var fail = false;
+            var def1 = jatos.downloadResultFile("example.json")
+                .done((obj) => { 
+                    if (JSON.stringify(obj) !== JSON.stringify({ a: 1, b: "foo" })) fail = true; 
+                })
+                .fail(() => fail = true);
+            var def2 = jatos.downloadResultFile("example.txt")
+                .done((text) => { 
+                    if (text !== "foobar") fail = true; 
+                })
+                .fail(() => fail = true);
+            var def3 = jatos.downloadResultFile("example.video")
+                .done((blob) => { if (!(blob instanceof Blob)) fail = true; })
+                .fail(() => fail = true);
+            var def4 = jatos.downloadResultFile(1, "example.video")
+                .done((blob) => { if (!(blob instanceof Blob)) fail = true; })
+                .fail(() => fail = true);
+
+            return $.when(def1, def2, def3, def4)
+                .done(() => {
+                    if (!fail) addSuccess("jatos.downloadResultFile (deferred)")
+                    else addFail("jatos.downloadResultFile (deferred)")
+                }).promise();
+        }
+
+        function testJatosLog() {
+            $('body').append('<p class="test"> jatos.log : ?</p>');
+            jatos.log("This is a log test 1 originating in the client side.");
+            jatos.log("This is a log test 2 originating in the client side.");
+            jatos.log("This is a log test 3 originating in the client side.");
+            jatos.log("This is a log test 4 originating in the client side.");
+            jatos.log("This is a log test 5 originating in the client side.");
+        }
+
+        function testHttpLoopCounter() {
+            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 23);
+        }
+
+        function checkTestNumber() {
+            testVar($("p.test").length, "Check test number", 72);
+        }
+
+    </script>
+</body>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="/study_assets/survey-js/javascript/jquery-3.1.1.min.js"></script>
+    <script src="/study_assets/survey-js/survey-jquery/survey.jquery.js"></script>
+    <script src="/assets/javascripts/jatos.js"></script>
+    <link rel="stylesheet" href="/study_assets/survey-js/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/study_assets/survey-js/study.css">
+</head>
+
+<body>
+    <div id="demographics"></div>
+
+    <script>
+        jatos.onLoad(function () {
+
+            Survey.Survey.cssType = "bootstrap";
+            Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+
+            window.survey = new Survey.Model({
+                pages: [{
+                    questions: [{
+                            name: "name",
+                            type: "text",
+                            title: "Please enter your name:",
+                            placeHolder: "Jon Snow",
+                            isRequired: true
+                        },
+                        {
+                            name: "birthdate",
+                            type: "text",
+                            inputType: "date",
+                            title: "Your birthdate:",
+                            isRequired: true
+                        },
+                        {
+                            type: "dropdown",
+                            name: "country",
+                            title: "What country do you live in?",
+                            isRequired: true,
+                            colCount: 0,
+                            choices: jatos.componentJsonInput.countries,
+                            isRequired: true
+                        },
+                        {
+                            name: "color",
+                            type: "text",
+                            inputType: "color",
+                            title: "Your favorite color:"
+                        },
+                        {
+                            name: "email",
+                            type: "text",
+                            inputType: "email",
+                            title: "Your e-mail:",
+                            placeHolder: "jon.snow@nightwatch.org",
+                            isRequired: true,
+                            validators: [{
+                                type: "email"
+                            }]
+                        }
+                    ]
+                }]
+            });
+
+            survey.onComplete.add(function (result) {
+                $("#demographics").hide(); // Hides the 'Thank you for completing ...' message
+                jatos.submitResultData(JSON.stringify(result.data), jatos.startNextComponent);
+            });
+
+            $("#demographics").Survey({
+                model: survey
+            });
+
+        });
+    </script>
+</body>
+
+</html>

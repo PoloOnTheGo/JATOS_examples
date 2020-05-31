@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="/study_assets/csv_example/css/csv_example.css" />
+	<script src="/assets/javascripts/jatos.js"></script>
+	<script src="/study_assets/csv_example/libs/jquery-1.11.1.min.js"></script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+	<div id="component">
+		<p>This component serves a very simple purpose: it takes JSON data (hard-coded into the JavaScript), converts it into comma-separated
+			values (CSV) and submits it back to JATOS as result data.</p>
+		<p>JATOS' saves any data that can be stored as simple text, so it naturally supports either JSON or CSV data as output formats
+			(We recommend JSON strings because they are robust and much more flexible than CSV; but the choice is yours).</p>
+		<h2 id="jsonLabel">Original JSON (hard-coded in the component's JavaScript)</h2>
+		<p id="json"></p>
+		<h2 id="csvLabel">JSON converted into CSV-Format (will be sent to JATOS as result)</h2>
+		<p id="csv"></p>
+		<p>Press any key to continue</p>
+	</div>
+
+	<script>
+
+		// Example data: it's an JavaScript array that contains objects
+		var data = [ {
+			Family : "Canidae",
+			Kingdom : "Animalia",
+			Phylum : "Chordata",
+			Class : "Mammalia",
+			Infraclass : "",
+			Order : "Carnivora",
+			Suborder : "Caniformia",
+			Infraorder : "",
+			TemporalRange : "Pleistocene - Recent"
+		}, {
+			Family : "Felidae",
+			Kingdom : "Animalia",
+			Phylum : "Chordata",
+			Class : "Mammalia",
+			Infraclass : "",
+			Order : "Carnivora",
+			Suborder : "Feliformia",
+			Infraorder : "",
+			TemporalRange : "Oligocene - Recent"
+		}, {
+			Family : "Ursidae",
+			Kingdom : "Animalia",
+			Phylum : "Chordata",
+			Class : "Mammalia",
+			Infraclass : "",
+			Order : "Carnivora",
+			Suborder : "Caniformia",
+			Infraorder : "",
+			TemporalRange : "Eocene - Recent"
+		}, {
+			Family : "Cervidae",
+			Kingdom : "Animalia",
+			Phylum : "Chordata",
+			Class : "Mammalia",
+			Infraclass : "Eutheria",
+			Order : "Artiodactyla",
+			Suborder : "Ruminantia",
+			Infraorder : "Pecora",
+			TemporalRange : "Early Oligocene - Recent"
+		} ];
+
+		// We use this variable to temporarly store the data in CSV format
+		var dataAsCsv;
+
+		// Show data (JSON format)
+		var dataAsJsonStr = JSON.stringify(data);
+		$('#jsonLabel').show();
+		$('#json').text(dataAsJsonStr).show();
+
+		// Convert data into CSV format and show
+		dataAsCsv = asCSV(data, true);
+		$('#csvLabel').show();
+		$('#csv').text(dataAsCsv).show();
+
+		jatos.onLoad(function() {
+			// Wait for any key press
+			$(document).keydown(sendResultsAndEndStudy);
+		});
+
+		// What todo when user presses a key
+		function sendResultsAndEndStudy(event) {
+			// Send results to the JATOS server and end study
+			jatos.submitResultData(dataAsCsv, jatos.endStudy);
+		}
+
+		// Converts a given array of simple objects into CSV format. If showLabel is true it adds the columns names.
+		function asCSV(dataAsArray, showLabel) {
+			var csvStr = '';
+			if (showLabel) {
+				var row = "";
+				for ( var i in dataAsArray[0]) {
+					row += i + ',';
+				}
+				row = row.slice(0, -1);
+				csvStr += row + '\r\n';
+			}
+			for (var i = 0; i < dataAsArray.length; i++) {
+				var row = "";
+				for ( var j in dataAsArray[i]) {
+					row += '"' + dataAsArray[i][j] + '",';
+				}
+				row = row.slice(0, -1);
+				csvStr += row + '\r\n';
+			}
+			return csvStr;
+		}
+	</script>
+</body>
+
+</html>

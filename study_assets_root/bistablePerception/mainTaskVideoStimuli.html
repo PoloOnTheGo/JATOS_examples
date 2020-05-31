@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <link rel="stylesheet" href="css/showStimuli.css" />
+  <link href="libs/video-js.css" rel="stylesheet">
+  <script src='libs/video.js'></script>
+  <script src="libs/jquery-1.11.1.min.js"></script>
+  <script src="jatos.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+
+  <!-- Uncaught (in promise) DOMException error occurs if you reload the component. This comes from the video.js library -->
+
+<body>
+  <p id="instructionsText" class="text"> Hold down the arrow keys to indicate in which direction you see the <b>front
+      layer</b> of the image moving</p>
+  <video id="bistableVideo" class="video-js vjs-default-skin" preload="auto" width="640" height="264" autoplay="true"
+    loop="true" data-setup='{"example_option":true}'></video>
+  <p id="feedbackKeyPress"></p>
+  <p id="quit">Quit Study</p>
+
+  <script>
+    // Useful docs: https://docs.videojs.com/docs/api/player.html
+    // Especially videoPlayer.bufferedPercent() can help check that video has been buffered enough to prevent display delays 
+    var framesPerSec = 60;
+    var responseKeyArray = [];
+    var responseTimeArray = [];
+    var videoPlayer = videojs('bistableVideo');
+    var resultData = { "videoOnsetTime":[], "responseTime": [], "responseKey": [] };
+    var keyWasDown;
+
+    jatos.onLoad(function () {
+      var trial = 0;
+      runTrials(trial);
+    });
+
+    function runTrials(trial) {
+      if (trial >= jatos.componentJsonInput.videoName.length) {
+        endStudy();
+        return;
+      }
+
+      startTrial(trial);
+
+      setTimeout(function () { // stop the video once stimulusDuration (set in jatos.componentJsonInput) has elapsed
+        endTrial(trial);
+        trial++;
+        runTrials(trial);
+      }, jatos.componentJsonInput.stimulusDuration);
+    }
+
+    function startTrial(trial) {
+      // empty these two arrays at the start of each trial
+      responseKeyArray = [];
+      responseTimeArray = [];
+      keyWasDown = false;
+      getVideo(trial);
+      videoPlayer.play();
+      resultData.videoOnsetTime.push(performance.now());
+    };
+
+    function getVideo(trial) {
+      // dynamically fill in the video source  
+      videoPlayer.src([
+        { type: "video/mp4", src: 'stimuli/' + jatos.componentJsonInput.videoName[trial] + '.mp4' }
+      ]);
+    };
+
+    function endTrial(trial) {
+      videoPlayer.pause();
+      //log response information
+      resultData.responseKey.push(responseKeyArray);
+      resultData.responseTime.push(responseTimeArray);
+    };
+
+    function endStudy() {
+      jatos.submitResultData(resultData, jatos.endStudy);
+    };
+
+    $(window).on('keydown', function (e) {
+      // log responses only if this is the first instance of a keydown (or keyup, see below). We will fill in the gaps in the analysis
+      if (!keyWasDown) { 
+        var direction;
+        var directionText;
+        keyWasDown = true;
+        if (e.keyCode == 39) {
+          direction = 'right';
+          directionText = '&rarr;';
+          $('#feedbackKeyPress').html(directionText).show();
+        } else if (e.keyCode == 37) {
+          direction = 'left';
+          directionText = '&larr;';
+          $('#feedbackKeyPress').html(directionText).show();
+        } else if (e.keyCode == 40) {
+          direction = 'down';
+          directionText = '&darr;';
+          $('#feedbackKeyPress').html(directionText).show();
+        } else {
+          // if direction is not one of the expected keys
+          direction = 'other';
+          $('#feedbackKeyPress').hide();
+        }
+        logKeyResponse(direction);
+      }
+    });
+
+    $(window).on('keyup', function (e) {
+      var direction;
+      var directionText;
+      keyWasDown = false;
+      direction = 'none';
+      $('#feedbackKeyPress').hide();
+      logKeyResponse(direction);
+    });
+
+    function logKeyResponse(direction) {
+      responseKeyArray.push(direction);
+      responseTimeArray.push(performance.now());
+    };
+
+    // What to do if worker presses the abort button
+    $("#quit").click(function () {
+      var answer = confirm("Do you really want to quit this study?");
+      if (answer == true) {
+        jatos.abortStudy("Worker decided to abort");
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="libs/snap.svg-min.js"></script>
+    <script src="libs/jquery-3.1.1.min.js"></script>
+    <script src="jatos.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/experiment.css" />
+    <link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+    <meta name="viewport"
+        content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+</head>
+
+<body>
+    <div id="container">
+        <svg id="svg"></svg>
+        <div id="overlay">
+            <div id="discrimination-question">
+                Which has more dots?<br>Press<br>
+                <span id="left-arrow" class="key">&larr;</span> or <span id="right-arrow" class="key">&rarr;</span>
+            </div>
+            <div id="confidence-question">
+                How sure are you?<br>Press<br>
+                <span id="confidence1" class="key">1</span>
+                <span id="confidence2" class="key">2</span>
+                <span id="confidence3" class="key">3</span>
+                <span id="confidence4" class="key">4</span>
+                <span id="confidence5" class="key">5</span>
+                <span id="confidence6" class="key">6</span>
+            </div>
+            <div id="start" class="is-center">
+                <p>You will see two circles each containing a group of dots, shown very briefly. <br>
+                    When prompted, use the arrow keys (&larr;, &rarr;) to indicate which of the circles you think
+                    contained the largest number of dots. <br>
+                    Immediately afterwards, rate your confidence in that your answer was correct from 1 (very unsure) to
+                    6 (very sure). <br>
+                    The task is difficult! You will likely make mistakes, that is to be expected. <br>
+                    Click on teh Start button below to begin.
+                </p>
+                <button class="pure-button">Start</button>
+            </div>
+            <div id="end" class="is-center">
+                <p>That's it, well done! Click on End to submit your data.</p>
+                <button class="pure-button">End</button>
+            </div>
+            <div class="is-right">
+                <button id="cancel-button" class="pure-button" onclick="jatos.abortStudy()">Cancel Study</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const win_width = $(window).width(); // Browser window witdh
+        const win_height = $(window).height(); // Browser window height
+        const show_dot_nums = false; // Shows number of dots in each circle on screen (for debugging)
+
+        const r_dot = 10; // Radius of one dot
+        const r_circle = win_width * 0.2; // Radius of circle
+        const stroke_width_circle = 5; // Stroke width of circle
+        const r_dot_max = r_circle - r_dot - stroke_width_circle / 2; // Radius in which dots will be drawn
+
+        var dots_num_fixed; // One circle alway has a fixed number of dots
+        var dots_step_delta; // How many dots are added/subtracted during the staircase
+        var dots_min_delta; // Minimum delta for number of dots between circles
+        var dots_max_delta; // Maximum delta for number of dots between circles
+        var dots_current_delta; // Current delta in dot numbers 
+
+        var last_answer_flag = false; // Needed for staircase
+
+        var result_data = []; // results that will be sent back to JATOS
+
+        // Init drawing canvas and overlay
+        var snap = Snap("#svg");
+        $("#svg").width($(window).width());
+        $("#svg").height($(window).height());
+        $("#container").width($(window).width());
+        $("#container").height($(window).height());
+        $("#overlay").width($(window).width());
+        $("#overlay").height($(window).height());
+
+        // Starting point of the study
+        jatos.onLoad(() => {
+            dots_num_fixed = jatos.componentJsonInput.dots.num_fixed;
+            dots_step_delta = jatos.componentJsonInput.dots.step_delta;
+            dots_min_delta = jatos.componentJsonInput.dots.min_delta;
+            dots_max_delta = jatos.componentJsonInput.dots.max_delta;
+            dots_current_delta = jatos.componentJsonInput.dots.start_delta;
+
+            $("#start").show();
+            $("#start button").click(() => {
+                $("#start").hide();
+                run();
+            });
+        });
+
+        async function run() {
+
+            for (i = 0; i < jatos.componentJsonInput.num_of_trials; i++) {
+
+                var dots_num_variable = dots_num_fixed + dots_current_delta;
+
+                // Assign dots numbers randomly to the left or right circle
+                var r = Math.random() >= 0.5;
+                var dots_num_left = r ? dots_num_fixed : dots_num_variable;
+                var dots_num_right = r ? dots_num_variable : dots_num_fixed;
+
+                var result = await runTrial(dots_num_left, dots_num_right);
+                result_data.push(result);
+
+                calcStairCase(result);
+            }
+
+            snap.clear();
+            $("#end").show();
+            $("#end button").click(() => {
+                // Submit result data back to JATOS
+                jatos.submitResultData(result_data, jatos.endStudy);
+            });
+        }
+
+        // Calculate the variable number of dots and use a staircase to make it more difficult/easier
+        function calcStairCase(result) {
+            if (result.discrimination_is_correct && last_answer_flag) {
+                // This and the last answer were correct -> make it more difficult (subtract something from delta)
+                if (dots_current_delta - dots_step_delta >= dots_min_delta) dots_current_delta -= dots_step_delta;
+                last_answer_flag = false;
+            } else if (result.discrimination_is_correct && !last_answer_flag) {
+                // This answer is correct but hte last one was wrong -> keep the current delta
+                last_answer_flag = true;
+            } else if (!result.discrimination_is_correct) {
+                // This answer was wrong -> make it easier (add something to delta)
+                if (dots_current_delta + dots_step_delta <= dots_max_delta) dots_current_delta += dots_step_delta;
+                last_answer_flag = false;
+            }
+        }
+
+        async function runTrial(dots_num_left, dots_num_right) {
+            drawCirclesDotsAndCross(dots_num_left, dots_num_right);
+            var t0 = performance.now();
+
+            await sleep(jatos.componentJsonInput.sleep_after_drawing);
+            drawCirclesAndCross(dots_num_left, dots_num_right);
+            var t_offset = performance.now() - t0;
+
+            var correct_answer = dots_num_left > dots_num_right ? "left" : "right";
+            var discrimination = await askDiscriminationQuestion(t0, correct_answer);
+            var confidence = await askConfidenceQuestion(t0);
+
+            var result = { t0, t_offset, dots_num_left, dots_num_right };
+            Object.assign(result, discrimination);
+            Object.assign(result, confidence);
+            return result;
+        }
+
+        function askDiscriminationQuestion(t0, correct_answer) {
+            $("#discrimination-question").show();
+            var discrimination_t_onset = performance.now() - t0;
+            var key, discrimination_t_keydown;
+
+            function keydown(resolve) {
+                $(document).on('keydown', function (event) {
+                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                    switch (keycode) {
+                        case 37:  // Arrow left
+                            discrimination_t_keydown = performance.now() - t0;
+                            $(document).off('keydown');
+                            key = "left";
+                            $("#left-arrow").addClass('gray');
+                            keyup(resolve);
+                            break
+                        case 39: // Arrow right
+                            discrimination_t_keydown = performance.now() - t0;
+                            $(document).off('keydown');
+                            key = "right";
+                            $("#right-arrow").addClass('gray');
+                            keyup(resolve);
+                            break
+                    }
+                });
+            }
+
+            function keyup(resolve) {
+                $(document).keyup(async function (event) {
+                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                    if (keycode == 37 || keycode == 39) {
+                        $(document).off('keyup');
+                        await sleep(150);
+                        $(".key").removeClass('gray');
+                        $("#discrimination-question").hide();
+                        var discrimination_is_correct = correct_answer == key;
+                        resolve({ discrimination_is_correct, discrimination_t_onset, discrimination_t_keydown });
+                    }
+                });
+            }
+
+            return new Promise(keydown);
+        }
+
+        function askConfidenceQuestion(t0) {
+            $("#confidence-question").show();
+            var confidence_t_onset = performance.now() - t0;
+            var confidence_key, confidence_t_keydown;
+
+            function keydown(resolve) {
+                $(document).on('keydown', function (event) {
+                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                    switch (keycode) {
+                        case 49:  // Number 1
+                            confidence_key = 1;
+                            $("#confidence1").addClass('gray');
+                            break
+                        case 50: // Number 2
+                            confidence_key = 2;
+                            $("#confidence2").addClass('gray');
+                            break
+                        case 51: // Number 3
+                            confidence_key = 3;
+                            $("#confidence3").addClass('gray');
+                            break
+                        case 52: // Number 4
+                            confidence_key = 4;
+                            $("#confidence4").addClass('gray');
+                            break
+                        case 53: // Number 5
+                            confidence_key = 5;
+                            $("#confidence5").addClass('gray');
+                            break
+                        case 54: // Number 6
+                            confidence_key = 6;
+                            $("#confidence6").addClass('gray');
+                            break
+                    }
+                    if (keycode >= 49 && keycode <= 54) {
+                        confidence_t_keydown = performance.now() - t0;
+                        $(document).off('keydown');
+                        keyup(resolve);
+                    }
+                });
+            }
+
+            function keyup(resolve) {
+                $(document).keyup(async function (event) {
+                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                    if (keycode >= 49 && keycode <= 54) {
+                        $(document).off('keyup');
+                        await sleep(500);
+                        $(".key").removeClass('gray');
+                        $("#confidence-question").hide();
+                        resolve({ confidence_key, confidence_t_onset, confidence_t_keydown });
+                    }
+                });
+            }
+
+            return new Promise(keydown);
+        }
+
+        function drawCirclesAndCross(dots_num_left, dots_num_right) {
+            snap.clear();
+            drawCircle(win_width * 0.25, win_height / 2, r_circle);
+            drawCircle(win_width * 0.75, win_height / 2, r_circle);
+            if (show_dot_nums) drawDotNums(dots_num_left, dots_num_right);
+            drawCross(win_width / 2, win_height / 2);
+        }
+
+        function drawCirclesDotsAndCross(dots_num_left, dots_num_right) {
+            snap.clear();
+            drawCircle(win_width * 0.25, win_height / 2, r_circle);
+            drawCircle(win_width * 0.75, win_height / 2, r_circle);
+            drawDots(win_width * 0.25, win_height / 2, dots_num_left, r_dot_max);
+            drawDots(win_width * 0.75, win_height / 2, dots_num_right, r_dot_max);
+            if (show_dot_nums) drawDotNums(dots_num_left, dots_num_right);
+            drawCross(win_width / 2, win_height / 2);
+        }
+
+        function drawCircle(x, y, r) {
+            var dish = snap.circle(x, y, r);
+            dish.attr({
+                fill: "#000",
+                stroke: "#fff",
+                strokeWidth: stroke_width_circle
+            });
+        }
+
+        function drawCross(x, y) {
+            var line1 = snap.line(x, y - 20, x, y + 20);
+            line1.attr({
+                stroke: "#fff",
+                strokeWidth: 1
+            });
+            var line2 = snap.line(x - 20, y, x + 20, y);
+            line2.attr({
+                stroke: "#fff",
+                strokeWidth: 1
+            });
+        }
+
+        function drawDotNums(dots_num_left, dots_num_right) {
+            var text = snap.text(50, 50, dots_num_left + " " + dots_num_right);
+            text.attr({
+                "font-size": 20,
+                fill: "#fff"
+            });
+        }
+
+        function drawDots(x, y, dot_num, r_max) {
+            var dot_coords = calcDotCoords(dot_num, r_max)
+            for (const c of dot_coords) {
+                var dot = snap.circle(c.x + x, c.y + y, r_dot);
+                dot.attr({
+                    fill: "#fff",
+                    strokeWidth: 0
+                });
+            }
+        }
+
+        function calcDotCoords(num, r_max) {
+            var dot_coords = []
+            var tries = 0
+            while (dot_coords.length < num) {
+                // Calculate random polar coordinates
+                // To get uniform random dots: http://www.anderswallin.net/2009/05/uniform-random-points-in-a-circle-using-polar-coordinates/
+                var r = r_max * Math.sqrt(Math.random())
+                var theta = Math.random() * 2 * Math.PI;
+                x = r * Math.cos(theta);
+                y = r * Math.sin(theta);
+                if (!checkDotOverlap(dot_coords, x, y)) {
+                    dot_coords.push({ x, y });
+                }
+                tries++;
+            }
+            console.log("Got " + dot_coords.length + " coordinates and rejected " + (tries - dot_coords.length) + " due to overlapping");
+            return dot_coords;
+        }
+
+        function checkDotOverlap(dot_coords, x, y) {
+            for (const c of dot_coords) {
+                if (Math.abs(c.x - x) < (r_dot * 2) && Math.abs(c.y - y) < (r_dot * 2)) return true
+            }
+            return false
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+    </script>
+</body>

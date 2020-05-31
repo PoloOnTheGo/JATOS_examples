@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="css/consent_form.css" />
+    <script src="jatos.js"></script>
+    <script src="libs/jquery-1.11.1.min.js"></script>
+    <meta charset="UTF-8" />
+    <title>Consent Form</title>
+</head>
+
+<body>
+    <p id="text"></p>
+    <div id="buttons">
+        <button id="agreeButton">I agree</button>
+        <button id="cancelButton">Cancel</button>
+    </div>
+
+    <script type="text/javascript">
+        jatos.onLoad(function() {
+            $("#text").html(jatos.componentJsonInput.text);
+            $("#buttons").show();
+        });
+
+        $('#agreeButton').click(function() {
+            var result = "Consent given.";
+            jatos.submitResultData(result, jatos.startNextComponent);
+        });
+
+        $('#cancelButton').click(function() {
+            jatos.abortStudy("Consent not given.");
+        });
+    </script>
+</body>
+
+</html>

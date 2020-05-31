@@ -1,0 +1,45 @@
+.btn-startTrial { 
+  color: #FFFFFF; 
+  background-color: #D64D1C; 
+  border-color: #000000; 
+} 
+ 
+.btn-startTrial:hover, 
+.btn-startTrial:focus, 
+.btn-startTrial:active, 
+.btn-startTrial.active, 
+.open .dropdown-toggle.btn-startTrial { 
+  color: #FFFFFF; 
+  background-color: #42B850; 
+  border-color: #000000; 
+} 
+ 
+.btn-startTrial:active, 
+.btn-startTrial.active, 
+.open .dropdown-toggle.btn-startTrial { 
+  background-image: none; 
+} 
+ 
+.btn-startTrial.disabled, 
+.btn-startTrial[disabled], 
+fieldset[disabled] .btn-startTrial, 
+.btn-startTrial.disabled:hover, 
+.btn-startTrial[disabled]:hover, 
+fieldset[disabled] .btn-startTrial:hover, 
+.btn-startTrial.disabled:focus, 
+.btn-startTrial[disabled]:focus, 
+fieldset[disabled] .btn-startTrial:focus, 
+.btn-startTrial.disabled:active, 
+.btn-startTrial[disabled]:active, 
+fieldset[disabled] .btn-startTrial:active, 
+.btn-startTrial.disabled.active, 
+.btn-startTrial[disabled].active, 
+fieldset[disabled] .btn-startTrial.active { 
+  background-color: #D64D1C; 
+  border-color: #000000; 
+} 
+ 
+.btn-startTrial .badge { 
+  color: #D64D1C; 
+  background-color: #FFFFFF; 
+}

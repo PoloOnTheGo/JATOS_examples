@@ -1,0 +1,31 @@
+#features {
+    width: 60%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+}
+
+#features img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+}
+
+#features li {
+    margin: 5px;
+}
+
+#nameForm {
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    margin-top: 20px;
+}
+
+#cancelButton {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+}

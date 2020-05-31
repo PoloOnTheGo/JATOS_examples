@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="libs/jquery-3.1.1.min.js"></script>
+    <script src="jatos.js"></script>
+    <link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+    <link rel="stylesheet" href="css/first.css">
+</head>
+
+<body>
+    <div id="features">
+        <img src="img/jatos_logo_color.svg" />
+        <h3>JATOS changes in version 3.2.3</h3>
+        <ul>
+            <li>Allow <b>relative paths</b>: this makes them much shorter. E.g. you can use
+                <pre><code>&lt;script src="libs/jquery.js"&gt;&lt;/script&gt;</code></pre> instead of
+                <pre><code>&lt;script src="/study_assets/my_study_folder/libs/jquery.js"&gt;&lt;/script&gt;.</code></pre>
+            </li>
+        </ul>
+        <h3>jatos.js changes in version 3.3.1</h3>
+        <ul>
+            <li>To load jatos.js
+                <code>&lt;script src="jatos.js"&gt;&lt;/script&gt;</code> is now enough</li>
+            <li>Conveniently all functions that start a new component (e.g.
+                <code>jatos.startNextComponent</code>) now additionally allow sending of result data. What was before
+                <code>jatos.submitResultData(resultData, jatos.startNextComponent)</code> is now just
+                <code>jatos.startNextComponent(resultData)</code> which also uses only one HTTP call and therefore is faster.</li>
+            <li>
+                <code>jatos.submitResultData</code> and
+                <code>jatos.appendResultData</code> now allow String or Object as parameter</li>
+            <li>Batch and group session's
+                <code>onSession</code> callback got additional parameter 'op' which presents the patch operations applied during
+                the session update</li>
+            <li>Provide MTurk's worker ID in
+                <code>jatos.urlQueryParameters.workerId</code>
+            </li>
+        </ul>
+    </div>
+
+    <div id="nameForm">
+        <p id="description">Please enter your name and press Next.</p>
+        <div class="pure-form">
+            <input type="text" placeholder="Your name ..." autofocus>
+            <button id="nextButton" type='button' class="pure-button pure-button-primary">Next</button>
+        </div>
+    </div>
+
+    <button id="cancelButton" type="button" class="pure-button">Cancel</button>
+</body>
+
+<script>
+    jatos.onLoad(function () {
+        // What to do if button was clicked
+        $('#nextButton').click(onNextButtonClick);
+        $('#cancelButton').click(onCancelButtonClick);
+    });
+
+    function onNextButtonClick() {
+        var name = $('input').val();
+        var resultData = {
+            "name": name
+        };
+        // Add all JATOS IDs
+        jatos.addJatosIds(resultData);
+        jatos.startNextComponent(resultData);
+    }
+
+    function onCancelButtonClick() {
+        jatos.abortStudy("Worker pressed Cancel button");
+    }
+</script>
+
+</html>

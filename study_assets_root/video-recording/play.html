@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="libs/RecordRTC.min.js"></script>
+    <script src="jatos.js"></script>
+</head>
+
+<style>
+    html,
+    body,
+    video,
+    canvas {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #quit {
+        padding: 0;
+        margin: 2em 0 0 2em;
+        position: absolute;
+        bottom: 1em;
+        right: 1em;
+    }
+</style>
+
+<body>
+    <br><br>
+    <button id="btn-download">Download Recording</button>
+    <button id="btn-play" disabled>Play Recording</button>
+    <button onclick="jatos.endStudy()">End Study</button>
+
+    <hr>
+    <video controls autoplay playsinline></video>
+
+    <script>
+        var videoBlob;
+
+        document.getElementById("btn-download").onclick = function () {
+            jatos.downloadResultFile("example.video").done((blob) => {
+                videoBlob = blob;
+                document.getElementById('btn-download').disabled = true;
+                document.getElementById('btn-play').disabled = false;
+            }).catch(function (error) {
+                alert('Unable to download video file. Please check console logs.');
+                console.error(error);
+            });
+        }
+
+        document.getElementById("btn-play").onclick = function () {
+        var video = document.querySelector('video');
+            video.srcObject = null;
+            video.src = URL.createObjectURL(videoBlob);
+        }
+
+        jatos.addAbortButton();
+
+    </script>
+</body>

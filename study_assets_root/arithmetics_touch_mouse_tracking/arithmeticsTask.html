@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="jatos.js"></script>
+	<link rel="stylesheet" href="arithmeticsTask.css" />
+	<meta name="viewport"
+		content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+</head>
+
+<body>
+
+	<div id="progressBar">
+		<div id="progress"></div>
+	</div>
+	<div id="instruction"></div>
+	<div id="responseBarContainer">
+		<div id="responseBar"></div>
+		<div id="responseLeftEnd">0</div>
+		<div id="responseRightEnd">10</div>
+	</div>
+	<div id="startButtonWrap">
+		<button id="startButton">Start</button>
+	</div>
+	<p id="quit">Quit Study</p>
+
+	<script>
+		var responseBar = document.querySelector('#responseBar');
+		var startButton = document.querySelector('#startButton');
+		var instruction = document.querySelector('#instruction');
+		var touchScreen = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+
+		var trial = 0;
+		var resultData = { "x": [], "y": [], "time": [] };
+		var pointer = { "x": [], "y": [], "time": [] };
+		// We need this to store the pointer x,y positions relative to the response bar
+		var responseBar = {
+			leftEnd: responseBar.getBoundingClientRect().left,
+			topEnd: responseBar.getBoundingClientRect().top
+		}
+
+		jatos.onLoad(function () {
+			startNextTrial();
+		});
+
+		function startNextTrial() {
+			pointer.x = [];
+			pointer.y = [];
+			pointer.time = []
+			if (touchScreen) {
+				instruction.innerHTML = "Touch Start to begin next trial. <br> Touch and drag to the correct answer along the white bar.";
+			} else {
+				instruction.innerHTML = "Click Start to begin next trial. <br> Hold your mouse button down and drag to the correct answer along the white bar.";
+			}
+
+			addMultipleEventListener(startButton, ['mousedown', 'touchstart'], onPointerDown);
+		};
+
+		function onPointerDown(event) {
+			startButton.disabled = true;
+			instruction.innerHTML = jatos.componentJsonInput.operation[trial];
+
+			event.preventDefault();
+			removeMultipleEventListener(startButton, ['mousedown', 'touchstart'], onPointerDown);
+			addMultipleEventListener(document, ['mousemove', 'touchmove'], onPointerMove);
+		}
+
+		function onPointerMove(event) {
+			var pointerX = Math.round((event.clientX ? event.clientX : event.touches[0].clientX) - responseBar.leftEnd);
+			var pointerY = Math.round((event.clientY ? event.clientY : event.touches[0].clientY) - responseBar.topEnd);
+			pointer.x.push(pointerX);
+			pointer.y.push(pointerY);
+			pointer.time.push(performance.now());
+
+			addMultipleEventListener(document, ['mouseup', 'touchend'], onPointerUp);
+		}
+
+		function onPointerUp(event) {
+			startButton.disabled = false;
+			endTrial();
+
+			event.preventDefault();
+			removeMultipleEventListener(document, ['mousemove', 'touchmove'], onPointerMove);
+			removeMultipleEventListener(document, ['mouseup', 'touchend'], onPointerUp);
+			addMultipleEventListener(startButton, ['mousedown', 'touchstart'], onPointerDown);
+		}
+
+		function endTrial() {
+			resultData.x[trial] = pointer.x;
+			resultData.y[trial] = pointer.y;
+			resultData.time[trial] = pointer.time;
+
+			trial++;
+			var progress = trial / jatos.componentJsonInput.operation.length * 100;
+			document.querySelector("#progress").style.width = progress + '%';
+			if (trial < jatos.componentJsonInput.operation.length) {
+				startNextTrial();
+			} else {
+				endStudy();
+			}
+		};
+
+		function endStudy() {
+			jatos.submitResultData(resultData, jatos.endStudy);
+		};
+
+		// What to do if the participant presses the abort button
+		document.querySelector("#quit").addEventListener('click', () => {
+			var answer = confirm("Do you really want to quit this study?");
+			if (answer == true) {
+				jatos.abortStudy("Worker decided to abort");
+			}
+		});
+
+		function addMultipleEventListener(element, events, handler) {
+			events.forEach(e => element.addEventListener(e, handler, false));
+		}
+
+		function removeMultipleEventListener(element, events, handler) {
+			events.forEach(e => element.removeEventListener(e, handler, false));
+		}
+
+	</script>
+</body>
+
+</html>

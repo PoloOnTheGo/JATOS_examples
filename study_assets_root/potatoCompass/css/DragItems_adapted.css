@@ -1,0 +1,63 @@
+body {
+  background-color: #777;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.draggable {
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-radius: 50%;
+  display: inline-block;
+  min-width: 40px;
+  padding: 0.5em 0.5em;
+  color: #555;
+  border: solid 4px #fff;
+  -webkit-transform: translate(0px, 0px);
+          transform: translate(0px, 0px);
+  transition: background-color 0.3s;
+}
+
+#canvasContainer, #container {
+  margin: 0px auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 100%;
+  text-align: center;
+}
+
+.dropzone {
+  height: 500px;
+  width: 500px;
+  background-color: #ccc;
+  border: dashed 4px transparent;
+  border-radius: 4px;
+  display:inline-block;
+  transition: background-color 0.3s;
+}
+
+.drop-active {
+  border-color: #aaa;
+}
+
+.drop-target {
+  background-color: #ddd;
+  border-color: #fff;
+  border-style: solid;
+}
+
+#endStudyButton {
+  color: #555;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #ccc;
+  border: solid 4px #fff;
+  border-radius: 4px;
+  padding: 0.5em 2em;
+}
+
+#endStudyButton:hover {
+  color: #333;
+  background-color: #999;
+}

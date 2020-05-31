@@ -1,0 +1,83 @@
+* {
+	margin:0;
+	padding:0;
+}
+
+html, body {
+	background-color: #000;
+	width:100%;
+	height:100%;
+}
+
+#container {
+	position: relative;
+}
+
+svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events:none;
+}
+
+#overlay {
+	z-index: 10;
+}
+
+#discrimination-question,
+#confidence-question {
+	position: absolute;
+    bottom: 10%;
+    width: 100%;
+	text-align: center;
+	font-size: 150%;
+	color: #fff;
+	display: none;
+}
+
+#left-arrow,
+#right-arrow {
+	font-size: 200%;
+}
+
+#confidence1,
+#confidence2,
+#confidence3,
+#confidence4,
+#confidence5,
+#confidence6 {
+	font-size: 200%;
+	padding: 5px;
+}
+
+.gray {
+	color: #444;
+}
+
+#start,
+#end {
+	display: none;
+	padding-top: 10%;
+}
+
+#start p,
+#end p {
+	color: #fff;
+	padding: 10px;
+}
+
+#cancel-button {
+    position: fixed;
+    bottom: 1em;
+	right: 1em;
+	background-color: transparent;
+	color: #aaa;
+}
+
+.is-center {
+    text-align: center;
+}
+
+.is-right {
+    text-align: right;
+}

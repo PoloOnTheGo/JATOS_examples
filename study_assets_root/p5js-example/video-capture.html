@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <script src="/study_assets/p5js-example/p5/p5.min.js"></script>
+    <script src="/study_assets/p5js-example/p5/addons/p5.dom.min.js"></script>
+    <script src="/study_assets/p5js-example/javascript/jquery-3.1.1.min.js"></script>
+    <script src="/assets/javascripts/jatos.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <p>Example from <a href="https://p5js.org/examples/dom-video-capture.html" target="_blank">https://p5js.org/examples/dom-video-capture.html</a><br>Press any key to continue</p>
+ 
+    <script>
+        var capture;
+
+        function setup() {
+            createCanvas(390, 240);
+            capture = createCapture(VIDEO);
+            capture.size(320, 240);
+            //capture.hide();
+        }
+
+        function draw() {
+            background(255);
+            image(capture, 0, 0, 320, 240);
+            filter('INVERT');
+        }
+
+
+        $("body").keypress(function () {
+            jatos.startNextComponent();
+        });
+    </script>
+
+</body>

@@ -1,0 +1,152 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<link rel="stylesheet" href="/study_assets/snake_game/libs/pure-release-0.6.0/pure-min.css">
+<link rel="stylesheet" type="text/css" href="/study_assets/snake_game/css/waiting_room.css" />
+<script	src="/study_assets/snake_game/libs/jquery-1.11.1.min.js"></script>
+<script src="/assets/javascripts/jatos.js"></script>    
+</head>
+<body>
+
+<div class="pure-g">
+	<div id="statusRow" class="pure-u-1-1">
+		<p id="statusText">&nbsp;</p>
+	</div>
+	<div id="buttonRow" class="pure-u-1-1">
+		<button id="joinButton" class="buttonJoin pure-button" onclick="onJoinButton()" disabled>Join Group</button>
+		<button id="leaveButton" class="buttonLeave pure-button" onclick="onLeaveButton()">Leave Group</button>
+		<button id="readyButton" class="buttonReady pure-button" onclick="onReadyButton()" disabled>Ready?</button>
+	</div>
+	<div id="memberCounterRow" class="pure-u-1-1">
+		<p><span id="memberCounter">0</span>&nbsp;Members</p>
+	</div>
+</div>
+
+<p id="quit">Quit Study</p>
+
+<script type="text/javascript">
+
+// What to do when jatos.js is finished initializing
+jatos.onLoad(function() {
+	$('#joinButton').prop('disabled', false);
+});
+
+// What should happen after join button was pressed: Join a group.
+function onJoinButton() {
+	// The jatos.joinGroup function takes an object with several callback functions as a parameter.
+	jatos.joinGroup({
+		"onOpen": onOpen,
+		"onMemberOpen": onMemberOpen,
+		"onMemberLeave": onMemberLeave,
+		"onMemberClose": onMemberClose
+	});
+}
+
+// What should happen when we successfully joined a group and opened the group channel
+function onOpen() {
+	$('#joinButton').hide();
+	$('#leaveButton').show();
+	$('#readyButton').prop('disabled', true);
+	showMemberStatus();
+	waitOrGoOn();
+}
+
+// What should happen when another member of the group joined and opened a group channel
+function onMemberOpen() {
+	showMemberStatus();
+	waitOrGoOn();
+}
+
+function waitOrGoOn() {
+	if (jatos.groupChannels.length >= jatos.studyJsonInput.minActiveMembers) {
+		onGroupOpen();
+	} else {
+		onGroupWaiting();
+	}
+}
+
+function onGroupWaiting() {
+	$('#joinButton').hide();
+	$('#leaveButton').show();
+	$('#readyButton').prop('disabled', true);
+	showMemberStatus();
+}
+
+// What should happen when the group has found its members and each member has an open group channel
+function onGroupOpen() {
+	$('#joinButton').hide();
+	$('#leaveButton').show();
+	$('#readyButton').prop('disabled', false);
+	showMemberStatus();
+	playDingSound();
+}
+
+// What should happen when the ready button is pressed: Start the game
+function onReadyButton() {
+	$('#readyButton').prop('disabled', true);
+	jatos.startNextComponent();
+}
+
+// What should happen after the another member's group channel closed.
+function onMemberClose(groupMemberId) {
+	waitOrGoOn();
+}
+
+// What should happen after another member left the group.
+function onMemberLeave(groupMemberId) {
+	waitOrGoOn();
+}
+
+// What should happen after the leave button was pressed: leave the group
+function onLeaveButton() {
+	jatos.leaveGroup(showMemberStatus);
+	$('#statusText').html("&nbsp;");
+	$('#joinButton').show();
+	$('#leaveButton').hide();
+	$('#readyButton').prop('disabled', true);
+}
+
+function showMemberStatus() {
+	if (jatos.groupChannels && jatos.groupChannels.length > 0) {
+		$('#memberCounter').text(jatos.groupChannels.length).show();
+		var num = jatos.studyJsonInput.minActiveMembers - jatos.groupChannels.length;
+		if (num > 1) {
+			$('#statusText').text("Waiting for " + num + " more players.");
+		} else if (num == 1) {
+			$('#statusText').text("Waiting for " + num + " more player.");
+		} else {
+			$('#statusText').text("Minimum number of players reached. Press ready to play!");
+		}
+	} else {
+		$('#memberCounter').text("0").show();
+	}
+}
+
+function playDingSound() {
+	if (doesSupportMP3) {
+		var audio = new Audio('/study_assets/snake_game/audio/ding-sound.mp3');
+		audio.play();
+	}
+}
+
+function doesSupportMP3() {
+	var a = document.createElement('audio');
+	return !!(a.canPlayType && a.canPlayType('audio/mpeg;').replace(/no/, ''));
+}
+
+// What todo when worker presses the abort button
+$("#quit").click(function() {
+	var answer = confirm("Do you really want to quit this study?");
+	if (answer == true) {
+		jatos.abortStudy("Worker decided to abort");
+	}
+});
+
+// What todo when jatos.js produces an error
+jatos.onError(function(errorMsg) {
+	$('#statusText').text("Error: " + errorMsg);
+});
+	
+</script>
+</body>
+</html>

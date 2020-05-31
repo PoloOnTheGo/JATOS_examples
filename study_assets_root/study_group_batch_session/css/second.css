@@ -1,0 +1,44 @@
+body {
+	margin: 1%;
+	padding: 0px;
+	background-color: #ccd;
+}
+
+h1,
+h2,
+p {
+	width: 100%;
+	text-align: center;
+}
+
+#groupSession .chatHistory,
+#batchSession .chatHistory {
+	font-family: monospace;
+	overflow-y: scroll;
+	height: 400px;
+	background-color: #fff;
+}
+
+#groupSession .chatHistory li,
+#batchSession .chatHistory li {
+	list-style-type: none;
+}
+
+#groupSession form,
+#batchSession form {
+	margin-top: 10px;
+}
+
+#studyInfo {
+	text-align: center;
+}
+
+#clearGroupSessionButton,
+#clearBatchSessionButton {
+	margin: 5px;
+}
+
+#endButton {
+	margin-top: 10px;
+	text-align: center;
+}

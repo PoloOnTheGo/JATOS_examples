@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+    <link rel="stylesheet" type="text/css" href="css/group_test.css" />
+    <script src="libs/jquery-1.11.1.min.js"></script>
+    <script src="jatos.js"></script>
+</head>
+
+<body>
+
+    <button class="pure-button pure-button-primary" onclick="onJoin()">Join</button>
+    <button class="pure-button pure-button-primary" onclick="onLeave()">Leave</button>
+    <button class="pure-button pure-button-primary" onclick="onSetFixed()">Fix</button>
+    <button class="pure-button pure-button-primary" onclick="onReassignGroup()">Reassign</button>
+    <button class="pure-button pure-button-primary" onclick="onSendMsg()">Send Msg</button>
+    <button class="pure-button pure-button-primary" onclick="onUpdateSession()">Update Session</button>
+    <button class="pure-button pure-button-primary" onclick="onClearSession()">Clear Session</button>
+    <button class="pure-button pure-button-primary" onclick="onEndStudy()">End Study</button>
+    <button class="pure-button pure-button-primary" onclick="onGui()">GUI</button>
+
+    <div class="pure-g">
+        <div id="history" class="pure-u-2-3">
+            <ul></ul>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        var jatosColor = "#aaa";
+        var groupColor = "#44f";
+        var errorColor = "#f00";
+
+        function onJoin() {
+            jatos.joinGroup({
+                "onOpen": onOpen,
+                "onClose": onClose,
+                "onError": onError,
+                "onMessage": onMessage,
+                "onMemberJoin": onMemberJoin,
+                "onMemberOpen": onMemberOpen,
+                "onMemberLeave": onMemberLeave,
+                "onMemberClose": onMemberClose,
+                "onGroupSession": onGroupSession,
+                "onUpdate": onUpdate
+            }).done(function () {
+                appendToHistory("jatos.joinGroup deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory("jatos.joinGroup deferred rejected", errorColor);
+            });
+        }
+
+        function onLeave() {
+            jatos.leaveGroup().done(function () {
+                appendToHistory("jatos.leaveGroup deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory("jatos.leaveGroup deferred rejected", errorColor);
+            });
+        }
+
+        function onSetFixed() {
+            jatos.setGroupFixed().done(function () {
+                appendToHistory("jatos.setGroupFixed deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory("jatos.setGroupFixed deferred rejected", errorColor);
+            });
+        }
+
+        function onReassignGroup() {
+            jatos.reassignGroup().done(function () {
+                appendToHistory("jatos.reassignGroup deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory("jatos.reassignGroup deferred rejected", errorColor);
+            });
+        }
+
+        function onOpen() {
+            appendToHistory("onOpen callback - " + getStats(), groupColor);
+        }
+
+        function onClose() {
+            appendToHistory("onClose callback - " + getStats(), groupColor);
+        }
+
+        function onError(errorMsg) {
+            appendToHistory("onError callback: " + errorMsg, errorColor);
+        }
+
+        function onMessage(msg) {
+            appendToHistory("onMessage callback: " + msg, groupColor);
+        }
+
+        function onMemberJoin(memberId) {
+            appendToHistory("onMemberJoin callback(" + memberId + ") - " + getStats(), groupColor);
+        }
+
+        function onMemberOpen(memberId) {
+            appendToHistory("onMemberOpen callback(" + memberId + ") - " + getStats(), groupColor);
+        }
+
+        function onMemberLeave(memberId) {
+            appendToHistory("onMemberLeave callback(" + memberId + ") - " + getStats(), groupColor);
+        }
+
+        function onMemberClose(memberId) {
+            appendToHistory("onMemberClose callback(" + memberId + ") - " + getStats(), groupColor);
+        }
+
+        function onGroupSession(path) {
+            appendToHistory("onGroupSession callback(" + path + ") - " + JSON.stringify(jatos.groupSession.find(path)),
+                groupColor);
+        }
+
+        function onUpdate() {
+            appendToHistory("onUpdate callback - " + getStats(), groupColor);
+        }
+
+        function onSendMsg() {
+            var msg = "Msg from " + jatos.groupMemberId;
+            jatos.sendGroupMsg(msg);
+            appendToHistory('jatos.sendGroupMsg("' + msg + '")', jatosColor);
+        }
+
+        function onUpdateSession() {
+            jatos.groupSession.add("/a", {
+                "b": "foo",
+                "c": 123,
+                "d": [1, 2, 3]
+            }).done(function () {
+                appendToHistory(" jatos.groupSession.add deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory(" jatos.groupSession.add deferred rejected", errorColor);
+            });
+        }
+
+        function onClearSession() {
+            jatos.groupSession.clear().done(function () {
+                appendToHistory(" jatos.groupSession.clear deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory(" jatos.groupSession.clear deferred rejected", errorColor);
+            });;
+        }
+
+        function onEndStudy() {
+            jatos.endStudyAjax().done(function () {
+                appendToHistory("jatos.onEndStudy deferred resolved", jatosColor);
+            }).fail(function () {
+                appendToHistory("jatos.onEndStudy deferred rejected", errorColor);
+            });
+        }
+
+        function onGui() {
+            window.location.href = "/jatos/" + jatos.studyId;
+        }
+
+        function getStats() {
+            return "channels " + jatos.groupChannels + ", memberId " + jatos.groupMemberId + ", members " + jatos.groupMembers +
+                ", groupResultId " + jatos.groupResultId + ", state " + jatos.groupState;
+        }
+
+        function appendToHistory(text, color) {
+            $("#history ul").append('<li>' + text + '</li>');
+            $("#history li").last().css('color', color);
+            // Scroll to bottom
+            $("#history").scrollTop($("#history")[0].scrollHeight);
+        }
+    </script>
+</body>
+
+</html>

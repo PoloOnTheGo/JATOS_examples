@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ASSC23 Workshop Chat</title>
+    <link rel="stylesheet" href="libs/emojionearea/emojionearea.css" />
+    <link rel="stylesheet" href="css/chat.css" />
+    <script src="libs/jquery-3.1.1.min.js"></script>
+    <script src="libs/js.cookie-2.2.0.min.js"></script>
+    <script src="libs/showdown.min.js"></script>
+    <script src="libs/emojionearea/emojionearea.js"></script>
+    <script src="jatos.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <main>
+        <header>
+            <h1>ASSC23 Workshop Chat (<span class="userCount">0</span>) <button class="endButton"
+                    onclick="jatos.endStudy()">End</button></h1>
+        </header>
+        <section class="chat"></section>
+        <form class="sendMsg">
+            <input type="text" placeholder="Your message ...">
+        </form>
+    </main>
+
+    <p id="chatEntryTemplate" class="chatEntry">
+        <span class="name"></span> (<span class="time"></span>):<br><span class="msg"></span>
+    </p>
+
+    <script>
+        var defaultColor = "#aaa";
+        var errorColor = "#f00";
+        var username = getUsername();
+        var chatMembers = new Set();
+
+        Notification.requestPermission();
+
+        jatos.onLoad(() => {
+            printOldChatMsgs();
+            sendMsgInput[0].emojioneArea.setFocus();
+        });
+
+        jatos.onError((error) => {
+            appendToChat("jatos.onError('" + error + "')", errorColor);
+        });
+
+        jatos.onBatchSession((path) => {
+            var chatBundle = jatos.batchSession.find(path);
+            var timestamp = path.split('/ts')[1];
+            addChatBundleToChat(timestamp, chatBundle);
+            showNotification(chatBundle);
+        });
+
+        function showNotification(chatBundle) {
+            if (Notification.permission != "granted" || typeof chatBundle != 'object' ||
+                typeof chatBundle.username != 'string' || chatBundle.username == username ||
+                typeof chatBundle.msg != 'string') {
+                return
+            }
+
+            new Notification('ASSC23 workshop - ' + chatBundle.username + ' says:', {
+                icon: '/jatos-logo.png',
+                body: chatBundle.msg,
+            });
+        }
+
+        function printOldChatMsgs() {
+            var chatHistory = jatos.batchSession.getAll();
+            // JS objects have no order so we have to sort the chat messages's timestamps
+            var orderedTimestamps = Object.keys(chatHistory).sort();
+            orderedTimestamps.forEach((tsTimestamp) => {
+                var chatBundle = chatHistory[tsTimestamp];
+                var timestamp = tsTimestamp.split('ts')[1];
+                addChatBundleToChat(timestamp, chatBundle);
+            });
+        }
+
+        function addChatBundleToChat(timestamp, chatBundle) {
+            if (typeof timestamp != 'string' || typeof chatBundle != 'object' ||
+                typeof chatBundle.username != 'string' || typeof chatBundle.msg != 'string') {
+                return;
+            }
+
+            var time = new Date(parseInt(timestamp));
+            addMsgToChat(chatBundle.username, time, chatBundle.msg);
+            addChatMember(chatBundle.username);
+        }
+
+        function addChatMember(member) {
+            chatMembers.add(member);
+            $(".userCount").text(chatMembers.size);
+        }
+
+        function addMsgToChat(username, time, msg) {
+            var timeStr = ("0" + time.getHours()).slice(-2) + ":" + ("0" + time.getMinutes()).slice(-2);
+            msg = showdown.makeHtml(msg); // Add markdown
+            msg = emojione.toImage(msg); // Add emoji images
+            var color = stringToColour(username);
+
+            var msgHtml = $("#chatEntryTemplate").clone().removeAttr('id');;
+            $(msgHtml).find(".name").text(username)
+            $(msgHtml).find(".time").text(timeStr);
+            $(msgHtml).find(".msg").html(msg)
+            $(msgHtml).css('color', color);
+
+            $(".chat").append(msgHtml);
+            // Scroll to bottom
+            $(".chat").scrollTop($(".chat")[0].scrollHeight);
+        }
+
+        function chatMsgInputHandler(editor, event) {
+            if (event.which != 13) return;
+
+            var msg = sendMsgInput[0].emojioneArea.getText();
+            if (!msg.trim()) {
+                return;
+            }
+            sendMsgInput[0].emojioneArea.setText("");
+
+            // Create object to be appended to the batch session with message text an study result ID
+            var chatBundle = {
+                "msg": msg,
+                "username": username
+            };
+            var timestamp = new Date().getTime();
+            var pointer = "/ts" + timestamp.toString();
+            jatos.batchSession.add(pointer, chatBundle).fail(() => {
+                addMsgToChat("JATOS", new Date(), "An error occured: batch session synchronization failed");
+            });
+        }
+
+        // A function that uses a string as a seed to generate a pseudo-random color
+        function stringToColour(str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var colour = '#';
+            for (var i = 0; i < 3; i++) {
+                var value = (hash >> (i * 8)) & 0xFF;
+                colour += ('00' + value.toString(10)).substr(-2);
+            }
+            return colour;
+        }
+
+        function getUsername() {
+            var username = Cookies.get('chat_username');
+            while (!username) {
+                username = prompt('Your name:').trim();
+                if (username) {
+                    Cookies.set('chat_username', username);
+                    break;
+                } else {
+                    alert('We cannot work with you like that!');
+                }
+            }
+            return username;
+        }
+
+        var noMorePsExt = {
+            type: 'output',
+            filter: function (text, converter) {
+                var re = /<\/?p[^>]*>/ig;
+                text = text.replace(re, '');
+                return text;
+            }
+        };
+        var showdown = new showdown.Converter({ extensions: [noMorePsExt] });
+
+        var sendMsgInput = $(".sendMsg input").emojioneArea({
+            tones: false,
+            events: {
+                keyup: chatMsgInputHandler
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/study_assets/study_group_batch_session/libs/pure-release-0.6.0/pure-min.css">
+    <link rel="stylesheet" type="text/css" href="/study_assets/study_group_batch_session/css/first.css" />
+    <script src="/study_assets/study_group_batch_session/libs/jquery-3.1.1.min.js"></script>
+    <script src="/assets/javascripts/jatos.js"></script>
+</head>
+
+<body>
+    <div class="nameForm">
+        <p>Enter your name. Your name will be put into the study session and it will be accessible in all following
+            components.</p>
+        <div class="pure-form">
+            <input type="text" placeholder="Your name ..." autofocus>
+            <button class="pure-button pure-button-primary" type='button'>Next</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $('button').click(function () {
+            var name = $('input').val();
+            // Remove spaces from both ends and check that we have name
+            if (!name.trim()) {
+                return;
+            }
+            jatos.studySessionData["workerName"] = name;
+            jatos.startNextComponent();
+        });
+
+        // Get the 'enter' key press in the input field
+        $('input').keypress(function (event) {
+            // Check for 'Enter' button press
+            if (event.which == 13) {
+                event.preventDefault();
+                // Treat it as if the send button was clicked.
+                $("button").click();
+            }
+        });
+    </script>
+
+</body>

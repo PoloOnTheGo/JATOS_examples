@@ -1,0 +1,102 @@
+<!doctype html>
+<!-- Example taken from http://docs.jspsych.org and adapted for use with JATOS-->
+<html>
+
+<head>
+	<title>My experiment</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/jspsych.js"></script>
+	<script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/plugins/jspsych-text.js"></script>
+	<script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
+	<script src="/assets/javascripts/jatos.js"></script>
+	<link href="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+</body>
+<script>
+	// This code will randomly pick a condition name.
+	// This will determine which component (out of two possible ones) the worker is sent to.
+	// This code uses these data, that come from the JSON input. Write an equivalent JSON string
+	// if you are writing your own study, and include it into the JSON input data.
+	// {"conditionNames": ["A", "A", "A", "A", "A", "B", "B", "B", "B", "B"], "used": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+
+	var conditions;
+	var randomCondition; // Name of randomly picked condition
+	var componentPosition_condA = 2;
+	var componentPosition_condB = 3;
+
+	var welcome_block = {
+		type: "text",
+		text: "Please wait while we set things up. Press any key to continue."
+	};
+
+	var timeline = [];
+	timeline.push(welcome_block);
+
+	jatos.onLoad(function () {
+		getAndSortConditions();
+
+		jsPsych.init({
+			timeline: timeline,
+			on_finish: onFinishComponent
+		})
+	});
+
+	function getAndSortConditions() {
+		// First set or get batch session data	
+		if ($.isEmptyObject(jatos.batchSession.getAll())) {
+			jatos.batchSession.setAll(jatos.componentJsonInput).done(function () {
+				conditions = jatos.batchSession.getAll();
+				sortCondition();
+			}).fail(getAndSortConditions); // If it fails: try getAndSortConditions again
+		} else {
+			conditions = jatos.batchSession.getAll();
+			sortCondition();
+		}
+	}
+
+	function sortCondition() {
+		// Get the ones that have not been used yet
+		condsUnused = findInArray(conditions.used, 0);
+		// Get a randomly index from the condsUnused array
+		randomElement = condsUnused[Math.floor(Math.random() * condsUnused.length)];
+		// Get the corresponding random condition name 
+		randomCondition = conditions.conditionNames[randomElement];
+		// Flag this condition as 'used' with a 1 
+		conditions.used[randomElement] = 1;
+		// Update the batch session data with the new 'used' array
+		jatos.batchSession.set("used", conditions.used);
+	}
+
+	function onFinishComponent() {
+		var resultData = {};
+		resultData.randomCondition = randomCondition;
+		resultData.conditions = conditions;
+		var resultJson = JSON.stringify(resultData);
+		jatos.submitResultData(resultJson);
+		redirectToComponent(randomCondition);
+	}
+
+	function redirectToComponent(randomCondition) {
+		if (randomCondition === "A") {
+			jatos.startComponentByPos(componentPosition_condA);
+		} else if (randomCondition === "B") {
+			jatos.startComponentByPos(componentPosition_condB);
+		}
+	}
+
+	function findInArray(array, valueToFind) {
+		var matchingIndexes = [];
+		var i;
+		for (i = 0; i < array.length; i++) {
+			if (array[i] === valueToFind) {
+				matchingIndexes.push(i);
+			}
+		}
+		return matchingIndexes;
+	}
+</script>
+
+</html>

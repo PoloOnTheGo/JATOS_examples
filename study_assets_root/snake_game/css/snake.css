@@ -1,0 +1,24 @@
+body {
+	margin:0px;
+	padding:0px;
+}
+
+#canvas {
+    display: block;
+    margin: 20px auto;
+}
+
+#endStudyButton{
+	text-align: center;
+}
+
+#quit {
+	cursor:pointer;
+	padding: 0;
+	margin: 2em 0 0 2em;
+	position:absolute;
+	bottom: 1em;
+	right: 1em;
+}
+
+

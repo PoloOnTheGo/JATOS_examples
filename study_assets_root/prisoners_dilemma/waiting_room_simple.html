@@ -1,0 +1,354 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<link rel="stylesheet" href="/study_assets/prisoners_dilemma/libs/pure-release-0.6.0/pure-min.css">
+<link rel="stylesheet" type="text/css" href="/study_assets/prisoners_dilemma/css/waiting_room.css" />
+<script	src="/study_assets/prisoners_dilemma/libs/jquery-1.11.1.min.js"></script>
+<script src="/assets/javascripts/jatos.js"></script>    
+</head>
+<body>
+
+<div class="pure-g">
+	<div id="statusRow" class="pure-u-1-1">
+		<p id="statusText">&nbsp;</p>
+	</div>
+	<div id="buttonRow" class="pure-u-1-1">
+		<button id="joinButton" class="pure-button" onclick="joinGroup()">Join Group</button>
+		<button id="readyButton" class="pure-button" onclick="onReadyButton()">Ready?</button>
+	</div>
+	<div id="countdownRow" class="pure-u-1-1">
+		<p id="countdown">&nbsp;</p>
+	</div>
+</div>
+
+<p id="quit">Quit Study</p>
+
+<script type="text/javascript">
+
+// Possible states a group member can be in (it has nothing to do with jatos.groupState)
+// It's used to check if all members are in the right state to start the study.
+var groupState = Object.freeze({
+	JOINED : "JOINED",
+	READY : "READY",
+	START : "START",
+});
+// Current group member states of all members of this group. Maps member ID -> groupState
+var memberStates = {};
+// Timeout object for ready interval: The 'Ready' button is only shown for a certain
+// time controlled by this timeout. 
+var groupReadyTimeout;
+// Timeout object for start interval: All group members have a certain time to give feedback
+// that they are ready to start. Only then the next component is started
+var groupStartTimeout;
+// Timeout object for waiting interval: When this timeout is over try to reassign to a different group
+var groupWaitReassignTimeout;
+// Interval object used for showing a countdown in ready interval
+var countdownInterval;
+
+// What to do when jatos.js is finished initializing
+jatos.onLoad(function() {
+	if (!checkGroupSize()) {
+		return;	
+	}
+	joinGroup();
+	setupGroupWaitReassignTimeout();
+});
+
+function checkGroupSize() {
+	if (jatos.batchProperties.maxActiveMembers != 2) {
+		$('#statusText').text("This group study is meant to be run in groups of two but it's batch properties allow more than two active members in a group. Please correct the batch properties. This study run is finished.");
+		jatos.endStudyAjax(false, "Wrong batch settings");
+		return false;
+	}
+	return true;
+}
+
+// Let jatos.js do the job of joining a group
+function joinGroup() {
+	// The jatos.joinGroup function takes an object with several callback functions as a parameter.
+	jatos.joinGroup({
+		"onOpen": onOpen,
+		"onMemberOpen": onMemberOpen,
+		"onMemberLeave": onMemberLeave,
+		"onMemberClose": onMemberClose,
+		"onMessage": onGroupMsg
+	});
+}
+
+// Wait for some time and then if the group can still not start try to reassign to a different group.
+// This is a safety measurement for if you're stranded in a group and nobody joins.
+function setupGroupWaitReassignTimeout() {
+	if (setupGroupWaitReassignTimeout && !jatos.isMaxActiveMemberOpen() && jatos.hasJoinedGroup()) {
+		reassignGroup();
+	}
+	groupWaitReassignTimeout = setTimeout(setupGroupWaitReassignTimeout, jatos.componentJsonInput.waitReassignTime);
+}
+
+// What should happen if jatos.js calls the onOpen callback function
+function onOpen() {
+	$('#joinButton').hide();
+	if (jatos.isMaxActiveMemberOpen()) {
+		onGroupCompleteOpen();
+	} else {
+		$('#readyButton').hide();
+		$('#statusText').text("You are in the waiting room, waiting for the other player.");
+	}
+}
+
+// What should happen if jatos.js calls the onMemberOpen callback function
+function onMemberOpen() {
+	if (jatos.isMaxActiveMemberOpen()) {
+		onGroupCompleteOpen();
+	}
+}
+
+// What should happen when the group has found its members and each member has an open group channel
+function onGroupCompleteOpen() {
+
+	// Current repeatings of the ready interval
+	var currentReadyRepeats = 0;
+	// Current fails to press the 'Ready' button of this worker
+	var currentReadyFails = 0;
+	resetWaitingRoom();
+	askReady();
+
+	// Let both members of the group press the ready button to show that he's still there and ready to start.
+	// If one member fails to press, repeat this several times. If a member fails several times he's probably
+	// not in front of his computer and we'll let him leave the group.
+	function askReady() {
+		if (currentReadyRepeats < jatos.componentJsonInput.maxReadyRepeats) {
+			currentReadyRepeats++;
+			playDingSound();
+			writeReadyStatusText();
+			$('#readyButton').show();
+			resetMemberStates();
+			startCountdown();
+			groupReadyTimeout = setTimeout(askReady, jatos.componentJsonInput.maxReadyTime + jatos.componentJsonInput.readyWaitTime);
+		} else {
+			if (currentReadyFails >= jatos.componentJsonInput.maxReadyRepeats) {
+				leaveGroup();
+				$('#joinButton').show();
+				$('#statusText').text("You seem to have better things to do. "
+						+ "You are taken out of the group for now. You can try to join a group later again.");
+			} else {
+				afterReadyFail();
+			}
+		}
+	}
+
+	function writeReadyStatusText() {
+		if (currentReadyRepeats == 1) {
+				$('#statusText').text("Group is complete. Ready to start the game?");
+		} else {
+			if (memberStates[jatos.groupMemberId] == groupState.READY) {
+				$('#statusText').text("The other wasn't ready. Let's give it another try.");
+			} else {
+				$('#statusText').text("You weren't quite ready? Let's give it another try.");
+			}	
+		}
+	}
+
+	// Does the countdown during ask-ready phase
+	function startCountdown() {
+		var startTime = new Date().getTime();
+		updateCountdown();
+		// Update countdown with this intervall every 100 ms
+		countdownInterval = setInterval(updateCountdown, 100);
+
+		function updateCountdown() {
+			var currentTime = new Date().getTime();
+			var diff = currentTime - startTime;
+			var seconds = Math.ceil((jatos.componentJsonInput.maxReadyTime - diff) / 1000);
+			if(seconds >= 0) {
+				$('#countdown').text(seconds);
+			} else {
+				$('#countdown').text(0);
+				$('#readyButton').hide();
+				if (memberStates[jatos.groupMemberId] != groupState.READY) {
+					currentReadyFails++;
+				}
+				clearInterval(countdownInterval);
+			}
+		}
+	}
+
+	// What should happen if ask-ready phase failed.
+	function afterReadyFail() {
+		if (jatos.isMaxActiveMemberOpen()) {
+			onGroupCompleteOpen();
+		}
+	}
+
+}
+
+// What should happen when the ready button is pressed
+function onReadyButton() {
+	$('#readyButton').hide();
+	setGroupState(groupState.READY);
+	if (checkAllMember(groupState.READY)) {
+		onGroupReady();
+	}
+}
+
+// What should happen if we receive a message via the group channel
+function onGroupMsg(msg) {
+	if (msg.hasOwnProperty(groupState.READY)) {
+		// Other member is ready
+		var groupMemberId = msg[groupState.READY];
+		memberStates[groupMemberId] = groupState.READY;
+		if (checkAllMember(groupState.READY)) {
+			onGroupReady();		
+		}
+	} else if (msg.hasOwnProperty(groupState.START)) {
+		// Other member is in START
+		var groupMemberId = msg[groupState.START];
+		memberStates[groupMemberId] = groupState.START;
+		if (checkAllMember(groupState.START)) {
+			groupStart();
+		}
+	}
+}
+
+// The group is ready. All members pressed the button. Now try to start the study:
+// We only start if within a certain time all members are in state START. This 
+// ensures a second time that all members group channels are still open. In difference to 
+// the ready phase no button has to be pressed.
+function onGroupReady() {
+	clearTimeout(groupReadyTimeout);
+	clearInterval(countdownInterval);
+	$('#statusText').text("Everyone is ready. Let's start!");
+	setGroupState(groupState.START);
+	groupStartTimeout = setTimeout(onGroupStartFailed, jatos.componentJsonInput.maxStartTime);
+
+	function onGroupStartFailed() {
+		leaveGroup();
+		$('#joinButton').show();
+		$('#statusText').text("Something went wrong. Let's try again from the beginning.");
+	}
+}
+
+// Go to the next component
+function groupStart() {
+	clearTimeout(groupStartTimeout);
+	jatos.setGroupFixed();
+	var result = "Joined group " + jatos.groupResultId;
+	jatos.submitResultData(result, jatos.startLastComponent);
+}
+
+// What should happen after the other member's group channel closed. Ideally this happens after all members
+// are in START and the other member already closed the group channel. It also happens if a member
+// left the group, or in case of network problems, or if the other pressed the reload button.
+function onMemberClose(groupMemberId) {
+	// Do nothing if we're in start phase and going to the next component
+	if (checkAllMember(groupState.START)) {
+		return;
+	}
+	delete memberStates[groupMemberId];
+	resetWaitingRoom();
+	if (memberStates[jatos.groupMemberId]) {
+		$('#statusText').text("The other player had connection problems. Waiting for the other player.");
+	}
+}
+
+// What should happen after the other member left the group.
+function onMemberLeave(groupMemberId) {
+	delete memberStates[groupMemberId];
+	resetWaitingRoom();
+	if (memberStates[jatos.groupMemberId]) {
+		$('#statusText').text("The other player left the group. Waiting for another player.");
+	}
+}
+
+// We leave the group and tell the other member about it and reset the UI.
+function leaveGroup() {
+	function onSuccess() {
+		delete memberStates[jatos.groupMemberId];
+		resetWaitingRoom();
+		$('#statusText').text("Left group - join again when you have some time to spare");
+	};
+	function onError() {
+		$('#statusText').text("Couldn't leave group");
+	};
+	jatos.leaveGroup(onSuccess, onError);
+}
+
+// We try to reassign to a different group and reset the UI.
+function reassignGroup() {
+	function onSuccess() {
+		// Show a message only if the group hasn't found it's members yet -
+		// otherwise the ready message will be shown
+		if (!jatos.isMaxActiveMemberOpen()) {
+			resetWaitingRoom();
+			$('#statusText').text("Reassigned to a different group");
+		}
+	};
+	function onfail() {
+		// nothing to do
+	};
+	jatos.reassignGroup(onSuccess, onfail);
+}
+
+// Returns true if all members are in the given state.
+function checkAllMember(state) {
+	for (var member in memberStates) {
+		if (memberStates.hasOwnProperty(member) && memberStates[member] != state) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// Reset all member states to JOINED
+function resetMemberStates() {
+	for (index = 0; index < jatos.groupMembers.length; ++index) {
+		memberStates[jatos.groupMembers[index]] = groupState.JOINED;
+	}
+}
+
+// A group state has to be set here and in the other member's side.
+// Use jatos.sendGroupMsg to send the new group state.
+function setGroupState(newState) {
+	memberStates[jatos.groupMemberId] = newState;
+	var msg = {};
+	msg[newState] = jatos.groupMemberId;
+	jatos.sendGroupMsg(msg);
+}
+
+// Reset the UI to like it was in the beginning.
+function resetWaitingRoom() {
+	$('#statusText').html("&nbsp;");
+	$('#readyButton').hide();
+	$('#countdown').html("&nbsp;");
+	clearTimeout(groupReadyTimeout);
+	clearInterval(countdownInterval);
+	clearTimeout(groupStartTimeout);
+}
+
+function playDingSound() {
+	if (doesSupportMP3) {
+		var audio = new Audio('/study_assets/prisoners_dilemma/audio/ding-sound.mp3');
+		audio.play();
+	}
+}
+
+function doesSupportMP3() {
+	var a = document.createElement('audio');
+	return !!(a.canPlayType && a.canPlayType('audio/mpeg;').replace(/no/, ''));
+}
+
+// What todo when worker presses the abort button
+$("#quit").click(function() {
+	var answer = confirm("Do you really want to quit this study?");
+	if (answer == true) {
+		jatos.abortStudy("Worker decided to abort");
+	}
+});
+
+// What todo when jatos.js produces an error
+jatos.onError(function(errorMsg) {
+	$('#statusText').text("Error: " + errorMsg);
+});
+	
+</script>
+</body>
+</html>

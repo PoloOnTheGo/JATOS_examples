@@ -1,0 +1,17 @@
+#phaser-example {
+	width: 800px;
+	margin: 0 auto;
+}
+
+#quit {
+	color: #333;
+	font-size: 2em;
+	cursor:pointer;
+	padding: 0;
+	margin: 2em 0 0 2em;
+	position:absolute;
+	bottom: 1em;
+	right: 1em;
+}
+
+

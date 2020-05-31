@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<link rel="shortcut icon" type="image/png" href="/study_assets/jquery_ui_example_study/images/favicon.png">
+<link rel="stylesheet" href="/study_assets/jquery_ui_example_study/libs/jquery-ui-1.11.4.custom/jquery-ui.min.css" />
+<link rel="stylesheet" href="/study_assets/jquery_ui_example_study/css/general.css" />
+<link rel="stylesheet" href="/study_assets/jquery_ui_example_study/css/textarea.css" />
+<script src="/assets/javascripts/jatos.js"></script>
+<script	src="/study_assets/jquery_ui_example_study/libs/jquery-1.11.1.min.js"></script>
+<script	src="/study_assets/jquery_ui_example_study/libs/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+	<div id="component">
+
+		<p id="progressbarText"></p>
+		<div id="progressbar"></div>
+		<div id="error"></div>
+		<p id="text">Please tell us a little Story.</p>
+		
+		<form id="littleStoryForm">
+			<textarea name="littleStory" id="littleStory" class="ui-widget ui-corner-all"></textarea>
+
+			<div id="submitButton">
+				<input class="ui-widget ui-button ui-state-default ui-corner-all" type="submit" value="Submit">
+			</div>
+		</form>
+	</div>
+
+	<div id="dialog" title="Confirmation">
+		<p id="dialogText"></p>
+	</div>
+
+	<p id="abort" title="If you quit your results will be deleted and you won't get paid.">Quit Study</p>
+
+	<script>
+		var componentResultData = {};
+
+		// Executed right after the page was rendered
+		function initJQueryUiItems() {
+			$(document).tooltip();
+		}
+
+		// What todo when jatos.js is finished loading
+		jatos.onLoad(function() {
+			startComponent();
+		});
+
+		// What todo when jatos.js produces an error
+		jatos.onError(function(errorMsg) {
+			showError(errorMsg);
+		});
+
+		// What todo when worker presses the abort button
+		$("#abort").click(function() {
+			var answer = confirm("Do you really want to quit this study? "
+					+ "You will NOT RECEIVE ANY PAY for this study.");
+			if (answer == true) {
+				jatos.abortStudy("Worker decided to abort");
+			}
+		});
+
+		function startComponent() {
+			initProgressbar();
+			addSubmitEvent();
+		}
+
+		function initProgressbar() {
+			$("#progressbar").progressbar({
+				value: jatos.componentPos,
+				max: jatos.componentList.length
+			});
+			var progressbarText = "Page " + jatos.componentPos + " of " + jatos.componentList.length;
+			$("#progressbarText").text(progressbarText);
+		}
+
+		// Add a listener to the submit botton (Add submit listener not until
+		// the form was fully rendered to prevent premature submitting)
+		function addSubmitEvent() {
+			$("#littleStoryForm").submit(function( event ) {
+
+				// Prevent normal submit listener call
+				event.preventDefault();
+
+				if (!validate()) {
+					return;
+				}
+
+				openDialogBox();
+			});
+		}
+
+		function validate() {
+			if ($("#littleStory").val().length === 0) {
+				showError("Please write a bit more!");
+				return false;
+			}
+			return true;
+		}
+
+		// Shows a jQuery UI dialog and blocks the screen
+		function openDialogBox() {
+			$("#dialogText").text($("#littleStory").val());
+			$("#dialog").dialog({
+				modal: true,
+				buttons: {
+					Ok: onDialogOk,
+					Cancel: onDialogCancel
+				}
+			});
+		}
+
+		// What to do if clicked on dialog's Ok
+		function onDialogOk() {
+			$('#dialog').dialog("close");
+			// Add text to the result data that will be sent back
+			componentResultData.littleStory = $("#littleStory").val();
+			endComponentAndNext();
+		}
+
+		// What to do if clicked on dialog's Cancel
+		function onDialogCancel() {
+			$('#dialog').dialog("close");
+		}
+
+		function endComponentAndNext() {
+			var resultDataAsStr = JSON.stringify(componentResultData);
+			// Post results back to the server and move to the next component
+			jatos.submitResultData(resultDataAsStr, jatos.startNextComponent, showError);
+		}
+
+		function showError(errorMsg) {
+			$("#error").html(errorMsg).show();
+		}
+	</script>
+</body>
+</html>

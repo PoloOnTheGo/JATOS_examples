@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="/study_assets/potatoCompass/css/DragItems_adapted.css"/>
+    <script src="/assets/javascripts/jatos.js"></script>
+    <script src="/study_assets/potatoCompass/libs/interact.min.js"></script>
+    <script src="/study_assets/potatoCompass/libs/jquery-1.11.1.min.js"></script>
+    <meta charset="UTF-8" />
+    <title>Canvas Drag and Drop Test</title>
+</head>
+<body>
+    <div id="container">
+        <p>Drag & drop the potatoes into the coordinate system. Press the 'End' button. You can then see their x and y coordinates in JATOS' results.</p>
+        <div id="dropTemplate" class="draggable" style="display: none;"></div>
+        <div id="canvasContainer">
+            <canvas id="potatoDropzone" class="dropzone"></canvas>
+        </div>
+        <button id="endStudyButton">End</button>
+    </div>
+
+    <script type="text/javascript">
+
+    // Here we store all our potato jQuery objects
+    var potatoes = [];
+
+    jatos.onLoad(function() {
+        createPotatoDivs();
+        drawAxisOnCanvas();
+    });
+
+    function createPotatoDivs() {
+        // Generates new divs from the #dropTemplate and sets name and color according to JATOS' JSON input data
+        $.each(jatos.componentJsonInput.potatoes, function(index, potato) {
+            var newPotato = $("#dropTemplate").clone();
+            newPotato.removeAttr('id');
+            newPotato.text(potato.name).css("background", potato.color);
+            newPotato.insertAfter("#dropTemplate").show();
+            newPotato.data(potato);
+            potatoes.push(newPotato);
+        });
+
+        // Set all potato divs to the same size
+        // First get the largest width or height of all potato divs
+        var widest = 0;
+        var heighest = 0;
+        $(".draggable").each(function(index) {
+            if ($(this).width() > widest) {
+                widest = $(this).width();
+            }
+            if ($(this).height() > heighest) {
+                heighest = $(this).height();
+            }
+        });
+        var largest = widest > heighest ? widest :heighest;
+
+        // Now set the width and height of all potato divs
+        $(".draggable").each(function(index) {
+            $(this).width(largest);
+            $(this).height(largest);
+            $(this).css("line-height", largest + "px"); 
+        });
+    }
+
+    function drawAxisOnCanvas() {
+        var ctx = $("#potatoDropzone")[0].getContext("2d");
+        var width = ctx.canvas.width = $("#potatoDropzone").width();
+        var height = ctx.canvas.height = $("#potatoDropzone").height();
+
+        ctx.beginPath();
+        ctx.moveTo(0, height / 2);
+        ctx.lineTo(width, height / 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(width / 2, 0);
+        ctx.lineTo(width / 2, height);
+        ctx.stroke();
+    }
+
+    interact('.draggable').draggable({
+        // enable inertial throwing
+        inertia: true,
+        // keep the element within the area of it's parent
+        restrict: {
+            restriction: "parent",
+            endOnly: true,
+            elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+        },
+        // enable autoScroll
+        autoScroll: true,
+        // call this function on every dragmove event
+        onmove: dragMoveListener,
+        // call this function on every dragend event
+        onend: function (event) {
+            var textEl = event.target.querySelector('p');
+            textEl && (textEl.textContent = 'moved a distance of ' + (Math.sqrt(event.dx * event.dx + event.dy * event.dy)|0) + 'px');
+        }
+    });
+
+    function dragMoveListener(event) {
+        var target = event.target;
+        // keep the dragged position in the data-x/data-y attributes
+        var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+        var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+        // translate the element
+        target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        // update the posiion attributes
+        target.setAttribute('data-x', x);
+        target.setAttribute('data-y', y);
+    }
+
+    // enable draggables to be dropped into this
+    interact('.dropzone').dropzone({
+        // only accept elements matching this CSS selector
+        accept: '.draggable',
+        // Require a 50% element overlap for a drop to be possible
+        overlap: 0.5,
+        // listen for drop related events:
+        ondropactivate: function (event) {
+            // add active dropzone feedback
+            event.target.classList.add('drop-active');
+        },
+        ondragenter: function (event) {
+            var draggableElement = event.relatedTarget;
+            var dropzoneElement = event.target; 
+            // feedback the possibility of a drop
+            dropzoneElement.classList.add('drop-target');
+            draggableElement.classList.add('can-drop');
+        },
+        ondragleave: function (event) {
+            // remove the drop feedback style
+            event.target.classList.remove('drop-target');
+            event.relatedTarget.classList.remove('can-drop');
+        },
+        ondrop: function (event) {
+            // nothing to do
+        },
+        ondropdeactivate: function (event) {
+            // remove active dropzone feedback
+            event.target.classList.remove('drop-active');
+            event.target.classList.remove('drop-target');
+        }
+    });
+
+    $('#endStudyButton').click(function() {
+        var resultData = getResultData(); 
+        var resultJson = JSON.stringify(resultData);
+        jatos.submitResultData(resultJson, jatos.startNextComponent);
+    });
+
+    function getResultData() {
+        var resultData = {};
+		var potatoData = []
+        var dropZoneWidth = $("#potatoDropzone").width();
+        var dropZoneHeight = $("#potatoDropzone").height();
+        var dropZoneOffsets = $("#potatoDropzone").offset();
+        var originX = dropZoneOffsets.left + dropZoneWidth / 2;
+        var originY = dropZoneOffsets.top + dropZoneHeight / 2;
+
+        $.each(potatoes, function(index, potato) {
+            var potatoResult = {};
+            potatoResult.name = potato.data().name;
+            
+            // Get coordinates within the #potatoDropzone with origin (0,0) in the center
+            if (potato.hasClass('can-drop')) {
+                var potatoOffsets = potato.offset();
+                var potatoDivWidth = potato[0].clientWidth;
+                var potatoDivHeight = potato[0].clientHeight;
+                var potatoX = potatoOffsets.left - originX + potatoDivWidth / 2;
+                var potatoY = originY - potatoOffsets.top - potatoDivHeight / 2;
+                potatoResult.x = Math.round(potatoX);
+                potatoResult.y = Math.round(potatoY);
+                potatoData.push(potatoResult);
+            } else {
+                potatoResult.x = null;
+                potatoResult.y = null;
+                potatoData.push(potatoResult);
+            }
+        });
+		resultData.potatoes = potatoData;
+		jatos.addJatosIds(resultData);
+        return resultData;
+    }
+
+    </script>
+</body>
+</html>

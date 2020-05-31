@@ -1,0 +1,40 @@
+body {
+	font: "Lucida Grande", sans-serif;
+	font-family: "verdana";
+	font-size: 18px;
+	margin: 0;
+	padding: 0;
+   	/*background-color: ;*/
+}
+
+
+#component {
+	margin-top: 6%;
+	margin-left: auto;
+	margin-right: auto;
+	width: 70%;
+	padding: 0;
+}
+
+.histogram {
+/*	min-width: 310px; 
+	height: 400px; */
+	margin: 20px;
+	margin-top: 60px;	
+}
+
+#normSampleMenuLabel, #studentSampleMenuLabel, #scaleTypeMenuLabel {
+	text-align: center;
+	margin: auto;
+	margin-bottom: 10px; 
+    clear:both;
+}
+
+#formNormSampleMenu, #formStudentSampleMenu, #formScaleTypeMenu {
+	border: none;
+/*	margin: auto;*/
+	text-align: center;
+	visibility: hidden;
+    float:left;
+
+}

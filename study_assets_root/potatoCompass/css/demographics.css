@@ -1,0 +1,63 @@
+body {
+	font: 18px "Lucida Grande","Helvetica Neue", sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+#component {
+	margin-top: 40px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 80%;
+	padding: 0;
+}
+
+#error {
+	margin: 10px;
+	text-align: center;
+	font-weight: bold;
+	color: red;
+	display: none;
+}
+
+#text {
+	text-align: center;
+	margin: 0;
+	padding: 0;
+	margin-bottom: 10px;
+}
+
+#abort {
+	cursor:pointer;
+	padding: 0;
+	margin: 10px 0 0 10px;
+	position:absolute;
+	bottom: 10px;
+	right: 10px;
+}
+
+.form-label {
+	text-align: right;
+	margin: 10px;
+	padding: 10px;
+}
+
+.form-item {
+	text-align: left;
+	margin: 10px;
+}
+
+.form-input {
+	text-align: left;
+	margin: 10px;
+	padding: 10px;
+}
+
+.ui-selectmenu-button, .ui-buttonset, .ui-spinner, .ui-spinner-input {
+	text-align: left;
+	margin: 10px;
+}
+
+.overflow {
+	height: 200px;
+}

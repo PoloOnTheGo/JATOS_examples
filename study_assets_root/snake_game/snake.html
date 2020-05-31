@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" type="text/css" href="/study_assets/snake_game/css/snake.css" />
+	<link rel="stylesheet" href="/study_assets/snake_game/libs/pure-release-0.6.0/pure-min.css">
+	<script src="/study_assets/snake_game/libs/jquery-1.11.1.min.js"></script>
+	<script src="/assets/javascripts/jatos.js"></script>
+</head>
+
+<body>
+
+	<canvas id="canvas" width="700" height="700"></canvas>
+	<div id="endStudyButton">
+		<button class="buttonJoin pure-button" disabled>End Study</button>
+	</div>
+	<p id="quit">Quit Study</p>
+
+	<script type="text/javascript">
+
+		var canvas = $("#canvas")[0];
+		var ctx = canvas.getContext("2d");
+		var w = $("#canvas").width();
+		var h = $("#canvas").height();
+
+		// Lets save the cell width in a variable for easy control
+		var cw = 10;
+		var d;
+		var score;
+
+		// Lets create the snake and food now
+		var snakeArray = []; // An array of cells to make up the my snake
+		var snakeColor; // Color of my snake
+		var food; // My food
+
+		// Lets create the group snakes and food now
+		var groupSnakeArrays = {}; // Arrays of all other snakes of the group
+		var groupSnakeColors = {}; // Colors or all other snakes of the group
+		var groupFood = {}; // Food of all other group members
+
+		// Result data to be sent back to JATOS
+		var resultData = {};
+
+		// What to do when jatos.js is finished initializing
+		jatos.onLoad(function () {
+			joinGroup();
+			$('#endStudyButton button').prop('disabled', false);
+		});
+
+		function joinGroup() {
+			jatos.joinGroup({
+				"onMessage": onGroupMsg,
+				"onOpen": init,
+				"onMemberLeave": onMemberLeave
+			});
+		}
+
+		function onGroupMsg(msg) {
+			if (msg.snakeArray) {
+				groupSnakeArrays[msg.memberId] = msg.snakeArray;
+				groupSnakeColors[msg.memberId] = msg.snakeColor;
+			} else if (msg.food) {
+				groupFood[msg.memberId] = msg.food;
+			} else if (msg.action && msg.action == "eat") {
+				createFood();
+				shareFood();
+			}
+		}
+
+		function onMemberLeave(memberId) {
+			delete groupSnakeArrays[memberId];
+			delete groupFood[memberId];
+		}
+
+		function onEndStudy() {
+			jatos.startNextComponent();
+		}
+
+		function init() {
+			createSnake();
+			shareSnakeArray();
+			createFood();
+			shareFood();
+
+			// Set snake color rectanglex
+			$('#snakeColorRectangle').css('background-color', snakeColor);
+
+			// Reset score
+			score = 0;
+
+			// Lets move the snake now using a timer which will trigger the paint
+			// function every 80 ms
+			if (typeof gameLoop != "undefined") {
+				clearInterval(gameLoop);
+			}
+			gameLoop = setInterval(paint, 80);
+
+			// Lets add the keyboard controls now
+			$(document).keydown(function (e) {
+				var key = e.which;
+				if (key == "37" && d != "right") {
+					d = "left";
+					putInResultData(d);
+				}
+				else if (key == "38" && d != "down") {
+					d = "up";
+					putInResultData(d);
+				}
+				else if (key == "39" && d != "left") {
+					d = "right";
+					putInResultData(d);
+				}
+				else if (key == "40" && d != "up") {
+					d = "down";
+					putInResultData(d);
+				}
+			});
+		}
+
+		function createSnake() {
+			var length = 5; // Length of the snake
+			snakeArray = []; // Empty array to start with
+			snakeColor = stringToColour(jatos.groupMemberId);
+			var startCoords = getRandomStartCoords();
+			var direction = Math.round(Math.random() * 3); // Random direction
+			switch (direction) {
+				case 0:
+					for (var i = 0; i < length; i++) {
+						snakeArray.push({ x: startCoords.x - i, y: startCoords.y });
+					}
+					d = "right";
+					break;
+				case 1:
+					for (var i = 0; i < length; i++) {
+						snakeArray.push({ x: startCoords.x + i, y: startCoords.y });
+					}
+					d = "left";
+					break;
+				case 2:
+					for (var i = 0; i < length; i++) {
+						snakeArray.push({ x: startCoords.x, y: startCoords.y - i });
+					}
+					d = "down";
+					break;
+				case 3:
+					for (var i = 0; i < length; i++) {
+						snakeArray.push({ x: startCoords.x, y: startCoords.y + i });
+					}
+					d = "up";
+					break;
+			};
+		}
+
+		// Lets create the food at a random position now
+		function createFood() {
+			food = {
+				x: Math.round(Math.random() * (w - cw) / cw),
+				y: Math.round(Math.random() * (h - cw) / cw),
+			};
+		}
+
+		// Create a random start position that is at least 15 cells away from each
+		// wall
+		function getRandomStartCoords() {
+			return {
+				x: Math.round(Math.random() * (w - cw - (30 * cw)) / cw + 15),
+				y: Math.round(Math.random() * (h - cw - (30 * cw)) / cw + 15),
+			};
+		}
+
+		// A function that uses a string as a seed to generate a pseudo-random color
+		function stringToColour(str) {
+			var color = Math.floor((Math.abs(Math.sin(parseInt(str)) * 16777215)) % 16777215).toString(16);
+			return "#" + color;
+		}
+
+		// Tell all other members of the group about our snake 
+		function shareSnakeArray() {
+			var snakeContainer = {};
+			// Use JATOS' study result ID as a unique ID to identify
+			// the different snakes in the different browsers
+			snakeContainer["memberId"] = jatos.studyResultId;
+			snakeContainer["snakeArray"] = snakeArray;
+			snakeContainer["snakeColor"] = snakeColor;
+			jatos.sendGroupMsg(snakeContainer);
+		}
+
+		// Tell all other members of the group about our food
+		function shareFood() {
+			var foodContainer = {};
+			foodContainer["memberId"] = jatos.studyResultId;
+			foodContainer["food"] = food;
+			jatos.sendGroupMsg(foodContainer);
+		}
+
+		// Tell the owner of the food that we eat it by sending a message only to him.
+		function eatFood(recipient) {
+			var actionContainer = {};
+			actionContainer["memberId"] = jatos.studyResultId;
+			actionContainer["action"] = "eat";
+			jatos.sendGroupMsgTo(recipient, actionContainer);
+		}
+
+		// Lets paint the snake now
+		// This function is called in a loop
+		function paint() {
+			shareSnakeArray(); // Send snake array to other group members
+
+			// Snake's movement:
+			// Pop out the tail cell and place it infront of the head cell
+			// Position of the snake's head cell.
+			var nx = snakeArray[0].x;
+			var ny = snakeArray[0].y;
+			// We will increment it to get the new head position
+			// Lets add proper direction based movement now
+			if (d == "right") {
+				nx++;
+			} else if (d == "left") {
+				nx--;
+			} else if (d == "up") {
+				ny--;
+			} else if (d == "down") {
+				ny++;
+			}
+
+			// Lets add the game over clauses now
+			// This will restart the game if the snake hits the wall
+			// Lets add the code for body collision
+			// Now if the head of the snake bumps into its body, the game will
+			// restart
+			if (nx == -1 || nx == w / cw || ny == -1 || ny == h / cw
+				|| checkCollision(nx, ny, snakeArray)
+				|| checkCollisionWithOthers(nx, ny, groupSnakeArrays)) {
+				// restart game
+				putInResultData("collision at " + nx + "," + ny);
+				init();
+				return;
+			}
+
+			// Lets write the code to make the snake eat the food
+			// If the new head position matches with that of the food,
+			// Create a new head instead of moving the tail
+			var eat = false;
+			if (nx == food.x && ny == food.y) {
+				eat = true;
+				score += 2;
+				putInResultData("eat own");
+				// Create new food
+				createFood();
+				shareFood();
+			}
+			// Check if our snake eats any of the other group members food
+			$.each(groupFood, function (memberId, anotherFood) {
+				if (nx == anotherFood.x && ny == anotherFood.y) {
+					eat = true;
+					score += 1;
+					putInResultData("eat others");
+					eatFood(memberId);
+				}
+			});
+
+			// If the snake eat food extend the tail
+			var tail;
+			if (eat) {
+				tail = { x: nx, y: ny };
+			} else {
+				tail = snakeArray.pop(); // pops out the last cell
+				tail.x = nx; tail.y = ny;
+			}
+			snakeArray.unshift(tail); // puts back the tail as the first cell
+
+			// To avoid the snake trail we need to paint the BG on every frame
+			// Lets paint the canvas now
+			ctx.fillStyle = "white";
+			ctx.fillRect(0, 0, w, h);
+			ctx.strokeStyle = "black";
+			ctx.strokeRect(0, 0, w, h);
+
+			// Lets paint the snakes
+			paintSnake(snakeArray, snakeColor);
+			$.each(groupSnakeArrays, function (groupMemberId, anotherSnakeArray) {
+				paintSnake(anotherSnakeArray, groupSnakeColors[groupMemberId]);
+			});
+
+			// Lets paint the food
+			paintCell(food.x, food.y, "red");
+			$.each(groupFood, function (groupMemberId, anotherFood) {
+				paintCell(anotherFood.x, anotherFood.y, "pink");
+			});
+
+			paintStats();
+		}
+
+		function paintSnake(s, color) {
+			for (var i = 0; i < s.length; i++) {
+				var c = s[i];
+				// Lets paint 10px wide cells
+				paintCell(c.x, c.y, color);
+			}
+		}
+
+		// Lets first create a generic function to paint cells
+		function paintCell(x, y, fillStyle) {
+			ctx.fillStyle = fillStyle;
+			ctx.fillRect(x * cw, y * cw, cw, cw);
+			ctx.strokeStyle = "white";
+			ctx.strokeRect(x * cw, y * cw, cw, cw);
+		}
+
+		function paintStats() {
+			ctx.fillStyle = "black";
+			ctx.fillText("Score: " + score, 5, h - 5);
+			ctx.fillText("Your color: ", 5, h - 20);
+			ctx.fillStyle = snakeColor;
+			ctx.fillRect(55, h - 30, 10, 10);
+		}
+
+		function checkCollision(x, y, array) {
+			// This function will check if the provided x/y coordinates exist
+			// in an array of cells or not
+			for (var i = 0; i < array.length; i++) {
+				if (array[i].x == x && array[i].y == y) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Check collision of the provided x/y coordinates with the group's snakes
+		function checkCollisionWithOthers(x, y, groupSnakeArrays) {
+			var collision = false;
+			$.each(groupSnakeArrays, function (groupId, anotherSnakeArray) {
+				if (checkCollision(x, y, anotherSnakeArray)) {
+					collision = true;
+				}
+			});
+			return collision;
+		}
+
+		// Adds an event to the result data that will be sent back to JATOS in the
+		// end. It adds the current time.
+		function putInResultData(event) {
+			var date = new Date();
+			var dateStr = date.getMinutes() + "-" + date.getSeconds()
+				+ "-" + date.getMilliseconds();
+			resultData[dateStr] = event;
+		}
+
+		// What todo if worker presses the end study button
+		$('#endStudyButton').click(function () {
+			var resultJson = JSON.stringify(resultData);
+			jatos.submitResultData(resultJson, jatos.endStudy);
+		});
+
+		// What todo if worker presses the abort button
+		$("#quit").click(function () {
+			var answer = confirm("Do you really want to quit this study?");
+			if (answer == true) {
+				jatos.abortStudy("Worker decided to abort");
+			}
+		});
+
+	</script>
+</body>
+
+</html>

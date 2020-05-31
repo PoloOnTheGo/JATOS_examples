@@ -1,0 +1,124 @@
+body {
+	font-size: 12px;
+	margin: 0;
+	padding: 2em;
+}
+
+p {
+	font-size: 2em;
+	margin: 0;
+	color: #222;
+}
+
+#actionsRow, #statsRow, #helpRow, #endRow {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+#actionsRow {
+	margin-top: 1em;
+}
+
+#actionsRow, #endRow {
+	text-align: center;
+}
+
+#statsRow .title, .scoreLabel, .historyLabel {
+    font-size: 2em;
+	text-align: center;
+	color: #fff;
+}
+
+#statsRow .title {
+	text-shadow: 0 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+#statsRow .scoreValue {
+    font-size: 2em;
+	text-align: left;
+	margin-left: 1em;
+	color: #fff;
+}
+
+#statsRow .historyValue {
+    font-size: 1em;
+	text-align: left;
+	margin-left: 1em;
+	color: #fff;
+}
+
+#actionsBox {
+	background: #dd514c;
+	color: #fff;
+	position: relative;
+	display: table-cell;
+}
+
+#actionsBox .actionText {
+	color: #fff;
+	position: absolute;
+    bottom: 0.2em;
+	width: 100%
+}
+
+#actionRound {
+	text-shadow: 0 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+#helpBox {
+	background: #777;
+	color: #fff;
+	display: table-cell;
+}
+
+#helpBox table {
+	font-size: 2em;
+	margin: 1em;
+	color: #fff;
+}
+
+#helpBox table td {
+	border: 3px solid white;
+}
+
+#myBox {
+	background: #519251;
+	color: #fff;
+}
+
+#otherBox {
+	background: rgb(128, 88, 165);
+	color: #fff;
+}
+
+.buttonAction, .buttonEnd {
+    color: white;
+	margin-top: 1em;
+	margin-bottom: 1em;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.buttonEnd {
+    background: rgb(223, 117, 20); /* this is an orange */
+	display: none;
+}
+
+.buttonAction {
+    background: rgb(66, 184, 221); /* this is a light blue */
+}
+
+#error {
+	text-align: center;
+}
+
+#quit {
+	cursor:pointer;
+	padding: 0;
+	margin: 2em 0 0 2em;
+	position:absolute;
+	bottom: 1em;
+	right: 1em;
+}
+
+

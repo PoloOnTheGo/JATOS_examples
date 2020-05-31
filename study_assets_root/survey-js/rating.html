@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="/study_assets/survey-js/javascript/jquery-3.1.1.min.js"></script>
+    <script src="/study_assets/survey-js/survey-jquery/survey.jquery.js"></script>
+    <script src="/assets/javascripts/jatos.js"></script>
+    <link rel="stylesheet" href="/study_assets/survey-js/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/study_assets/survey-js/study.css">
+</head>
+
+<body>
+    <div id="rating"></div>
+
+    <script>
+        Survey.Survey.cssType = "bootstrap";
+        Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+
+        window.survey = new Survey.Model({
+            questions: [{
+                type: "rating",
+                name: "satisfaction",
+                title: "How satisfied are you with the Product?",
+                mininumRateDescription: "Not Satisfied",
+                maximumRateDescription: "Completely satisfied"
+            }]
+        });
+
+        survey.onComplete.add(function (result) {
+            $("#rating").hide(); // Hides the 'Thank you for completing ...' message
+            jatos.submitResultData(JSON.stringify(result.data), jatos.startNextComponent);
+        });
+
+        $("#rating").Survey({
+            model: survey
+        });
+    </script>
+</body>
+
+</html>

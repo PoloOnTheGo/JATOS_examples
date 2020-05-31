@@ -1,0 +1,377 @@
+<html>
+<head>
+	<title>Data visualization</title>
+	<link rel="stylesheet" href="/study_assets/DataHistogram_example/libs/jquery-ui-1.11.4.custom/jquery-ui.min.css"/>
+	<link rel="stylesheet" href="/study_assets/DataHistogram_example/css/seeData.css"/>
+	<script src="/study_assets/DataHistogram_example/libs/jquery-2.1.1.min.js"></script>
+	<script src="/study_assets/DataHistogram_example/libs/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+	<script src="/study_assets/DataHistogram_example/libs/Highcharts-4.1.9/js/highcharts.js"></script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+	<div id="component">
+		<form action="#">
+			<fieldset id="formNormSampleMenu">
+				<label id="normSampleMenuLabel" for="normSampleMenu">Choose a normative distribution<br><br></label>
+				<select id="normSampleMenu">
+					<option value="0">Men 21-24 years old</option>
+					<option value="1">Women 21-24 years old</option>
+					<option value="2">Representative population sample</option>
+				</select>
+			</fieldset> 
+			<fieldset id="formStudentSampleMenu">
+				<label id="studentSampleMenuLabel" for="studentSampleMenu">Choose an experimental sample<br><br></label>
+				<select id="studentSampleMenu">
+					<option value="0">Men</option>
+					<option value="1">Women</option>
+					<option value="2">All</option>
+				</select>
+			</fieldset> 
+			<fieldset id="formScaleTypeMenu">
+				<label id="scaleTypeMenuLabel" for="scaleTypeMenu">Choose the scale type<br><br></label>
+				<select id="scaleTypeMenu">
+					<option value="0">Raw values</option>
+					<option value="1">Normalized values</option>
+				</select>
+			</fieldset> 
+		</form>
+		<p></p>
+		<div id="plot_distribution" class="histogram"></div>
+	</div>
+
+	<script>
+
+	//variable definitions
+	var selectedNormSample = 0; //initialize with any single distribution 
+	var selectedStudentSample = "0";
+	var scaleType = "0"; //0 = "rawValues". 1 = "standardValues"
+	var estimate = []; 
+	var count    = []; 
+	var bins 	   = []; 
+	var distributionParams = []; 	
+	var dataOfInterest = [];
+	// for plot (initialized with arbitrary values)
+	var xLabelText = "Testrohwert"; 
+	var minX = 0;
+	var maxX = 48;
+	var maxY_data = 10;
+	var maxY_population = 20;	
+	var normSampleVisibility = true;
+	var leftSDWindow;	
+	var rightSDWindow;
+
+	// These data are hard-coded into the JavaScript, as opposed to being set a json input data. see comment below for explanation.  
+	var componentJsonData = {
+		"distributionParams" : [ {
+			"sample" : "Men_21_24",
+			"sample_nr" : "1",
+			"subscales" : [ {
+				"subscale" : "N",
+				"mu" : 20.82,
+				"sd" : 7.59
+			} ]
+		}, {
+			"sample" : "Women_21_24",
+			"sample_nr" : "2",
+			"subscales" : [ {
+				"subscale" : "N",
+				"mu" : 23.49,
+				"sd" : 8.37
+			} ]
+		}, {
+			"sample" : "Population_representative",
+			"sample_nr" : "3",
+			"subscales" : [ {
+				"subscale" : "N",
+				"mu" : 20.99,
+				"sd" : 7.89
+			} ]
+		} ],
+		"students_data" : [ {
+			"gender" : [ "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "m", "m","m", "m", "m", "m", "m", "m", "m","w", "w", "w", "w", "w", "w", "m", "m", "m", "m","w" ],    
+			"allStudents" : [ {
+				"subscale" : "N",
+				"dataPoints" : [ 21, 13, 14, 25, 12, 22, 13, 14, 25, 14, 13, 23, 9, 16, 12, 24, 25, 17, 16, 4, 16, 31, 25, 14, 16, 16, 16, 35, 20, 21, 27, 10, 26, 16, 10, 9, 17, 6, 34, 41, 23, 32, 11, 5, 2, 33, 27, 22, 21, 21, 25, 30, 11, 19, 23, 43 ]
+			} ]
+		} ]
+	};
+
+
+	// note that the script gets going with the startComponent() function, and not with the usual jatos.onload()
+	// This is simply because this HTML document is meant to be used as a simple webpage that interactively displays data, but it won't post any results back to jatos, interact with other components, read data from the json input, or any of the other things that jatos would normally do. 
+	//Note also that the jatos.js library is missing from the header, for the same reasons. 
+	// The advantange of writing a script this way (and hard-coding the data into it) is that there are now no restrictions on how many people access the link at any point in time. 
+
+	// You can access the webpage directly in your localhost via the following link:
+	// http://localhost:9000/study_assets/DataHistogram_example/plotHistogram.html
+	// In the server, replace localhost:9000 with your server's address.  
+
+	startComponent();
+
+	function startComponent() {
+		$("#normSampleMenu").selectmenu({
+			select: function(event, ui) {
+				selectedNormSample = ui.item.value;
+				getEmpiricalData(selectedNormSample, selectedStudentSample, scaleType);
+				displaySlide();
+			}
+		});
+		$("#studentSampleMenu").selectmenu({
+			select: function(event, ui) {
+				selectedStudentSample = ui.item.value;
+				getEmpiricalData(selectedNormSample, selectedStudentSample, scaleType);
+				displaySlide();
+			}
+		});
+		$("#scaleTypeMenu").selectmenu({
+			select: function(event, ui) {
+				scaleType = ui.item.value;
+				getEmpiricalData(selectedNormSample, selectedStudentSample, scaleType);
+				displaySlide();
+			}
+		});
+		displaySlide();
+	}
+
+	function getEmpiricalData(selectedNormSample, selectedStudentSample){
+		distributionParams = componentJsonData.distributionParams[Number(selectedNormSample)].subscales[0];
+
+		gender 			= componentJsonData.students_data[0].gender;
+		allStudentsData = componentJsonData.students_data[0].allStudents[0];
+
+		dataOfInterest = [];
+		dataOfInterest.dataPoints = [];
+
+		switch(selectedStudentSample){
+			case "0": 
+			for (s=0; s<gender.length; s++){
+				if(gender[s]=='m'){
+					dataOfInterest.dataPoints.push(allStudentsData.dataPoints[s]); 
+				};
+			};
+			break;
+			case "1": 
+			for (s=0; s<gender.length; s++){
+				if(gender[s]=='w'){
+					dataOfInterest.dataPoints.push(allStudentsData.dataPoints[s]); 
+				};
+			};
+			break;
+			case "2":
+			for (s=0; s<gender.length; s++){
+				dataOfInterest.dataPoints.push(allStudentsData.dataPoints[s]); 
+			};
+			break;			
+		}
+
+		// transform the raw to standard data points
+		dataOfInterest.dataPoints_st = [];
+
+		for (x = 0; x < dataOfInterest.dataPoints.length; x++) {
+			dataOfInterest.dataPoints_st[x] = Number(((dataOfInterest.dataPoints[x]-distributionParams.mu)/distributionParams.sd).toFixed(1));
+		}
+
+		if(scaleType=="1"){
+
+			for (x = 0; x < 49; x++) {
+				bins[x] = Number((((x)-distributionParams.mu)/distributionParams.sd).toFixed(2));
+			}
+
+			for (x = 0; x < (bins.length-1); x++) {
+				estimate[x] = gaussian(bins[x], 0, 1);
+				//get the number of people with that value
+				count[x] = dataOfInterest.dataPoints_st.filter(function(value){
+					return (value >= bins[x] && value < bins[x+1]);}
+					).length;
+			}
+		} else if (scaleType=="0"){ 
+			for (x = 0; x < 49; x++) {
+
+				bins[x] = x;
+
+				//get the 'theoretical' estimate based on the gaussian distribution of the mean and sd provided
+				estimate[x] = gaussian(x, distributionParams.mu, distributionParams.sd);
+
+				//get the number of people with that value
+				count[x] = dataOfInterest.dataPoints.filter(function(value){return value === x;}).length;
+			}	
+		}
+	}
+
+	function gaussian(x, mu, sigma) {
+		var gaussianConstant = 1 / Math.sqrt(2 * Math.PI),
+		x = (x - mu) / sigma;
+		var pdf = 100*gaussianConstant * Math.exp(-.5 * x * x) / sigma;
+		return Number(pdf.toFixed(10));
+	};
+
+	function displaySlide(){
+		$("#formNormSampleMenu").css("visibility", "visible");
+		$("#formStudentSampleMenu").css("visibility", "visible");
+		$("#formScaleTypeMenu").css("visibility", "visible");
+		$("#studentSampleMenu-button").css("width", "200px")
+		$("#normSampleMenu-button").css("width", "250px")
+		$("#scaleTypeMenu-button").css("width", "200px")
+		generatePlot("plot_distribution", "Scale distribution", estimate, count, bins, distributionParams);
+	}
+
+	function generatePlot(plot_id, plot_title, populationEstimate, studentSample, bins, distributionParams) {
+		
+		switch(scaleType){
+			case "0": 
+			xLabelText = "Raw value"; 
+			minX = 0;
+			maxX = 48;
+			maxY_data = 10;
+			maxY_population = 20;	
+			normSampleVisibility = true;			
+			leftSDWindow = bins.indexOf(getClosestNum(distributionParams.mu-distributionParams.sd, bins));
+			rightSDWindow = bins.indexOf(getClosestNum(distributionParams.mu+distributionParams.sd, bins));							
+			break;
+			case "1": 
+			xLabelText = "Standard value"; 
+			minX = bins.indexOf(getClosestNum(-2.6, bins));
+			maxX = bins.indexOf(getClosestNum(2.6, bins));
+			maxY_data = 20;
+			maxY_population = 100;
+			normSampleVisibility = true;
+			leftSDWindow = bins.indexOf(getClosestNum(-1, bins)); 	
+			rightSDWindow = bins.indexOf(getClosestNum(1, bins));
+			break;
+		}
+
+		$("#" + plot_id).highcharts({
+			chart: {
+				zoomType: 'xy',
+				animation: false
+			},
+			title: {
+				useHTML: true,
+				text: plot_title
+			},
+			xAxis: [{
+				categories: bins,
+				min: minX,
+				max: maxX,
+				crosshair: true,
+				title: {
+					text: xLabelText
+				},
+            	plotBands: [{ // mark mean +- standard deviation
+            		color: '#FCFFC5',
+            		from: leftSDWindow,
+            		to: rightSDWindow,
+            		label:{
+            			useHTML: true,
+            			text: 'Mean &plusmn; 1 SD'
+            		}
+            	}],
+            	plotLines: [{
+            		color: '#FF0000',
+            		width: 2,
+            		value: distributionParams.mu
+            	}]
+            }],
+            plotOptions: {
+            	series: {
+                animation: false //this will disable the initial animation. Here, each update is done with a whole new plot creation, which is why I have to disable the 'first' animation is I want to disable what -to the user- feels like the updating animation
+            }
+        },
+        yAxis: [{ // Primary yAxis
+        	min: 0,
+        	max: maxY_population,
+        	startOnTick: false,
+        	endOnTick: false,
+        	labels: {
+        		useHTML: true,
+        		format: ' ',
+        		style: {
+        			color: Highcharts.getOptions().colors[1]
+        		}
+        	},
+        	title: {
+        		text: 'Normative population sample',
+        		style: {
+        			color: Highcharts.getOptions().colors[1]
+        		}
+        	}
+        }, { // Secondary yAxis
+        	min: 0,
+        	max: maxY_data,
+        	startOnTick: false,
+        	endOnTick: false,
+        	title: {
+        		text: 'Student sample',
+        		style: {
+        			color: Highcharts.getOptions().colors[0]
+        		}
+        	},
+        	labels: {
+        		useHTML: true,
+        		format: '{value} cases',
+        		style: {
+        			color: Highcharts.getOptions().colors[0]
+        		}
+        	},
+        	opposite: true
+        }],
+        tooltip: {
+        	shared: true
+        },
+        legend: {
+        	layout: 'vertical',
+        	align: 'left',
+        	x: 120,
+        	verticalAlign: 'top',
+        	y: 100,
+        	floating: true,
+        	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+        },
+        series: [{
+        	name: 'Student sample',
+        	type: 'column',
+        	yAxis: 1,
+        	data: studentSample,
+        	tooltip: {
+        		useHTML: true,
+        	}
+
+        }, {
+        	name: 'Population estimate',
+        	type: 'spline',
+        	data: populationEstimate,
+        	tooltip: {
+        	}
+        }]
+    });
+};
+
+function getClosestNum(num, ar)
+{
+	var i = 0, closest, closestDiff, currentDiff;
+	if(ar.length)
+	{
+		closest = ar[0];
+		for(i;i<ar.length;i++)
+		{           
+			closestDiff = Math.abs(num - closest);
+			currentDiff = Math.abs(num - ar[i]);
+			if(currentDiff < closestDiff)
+			{
+				closest = ar[i];
+			}
+			closestDiff = null;
+			currentDiff = null;
+		}
+        //returns first element that is closest to number
+        return closest;
+    }
+    //no length
+    return false;
+}
+
+</script>
+
+</body>
+</html>
