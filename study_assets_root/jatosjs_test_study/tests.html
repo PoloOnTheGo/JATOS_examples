@@ -29,6 +29,14 @@
             style: "color:green"
         });
 
+        var howOftenWasJatosOnLoadCalled = 0;
+        jatos.onload(() => { howOftenWasJatosOnLoadCalled++ });
+        jatos.onload(() => { howOftenWasJatosOnLoadCalled++ });
+        jatos.onLoad(() => {
+            howOftenWasJatosOnLoadCalled++;
+            testVar(howOftenWasJatosOnLoadCalled, "jatos.onLoad multiple callbacks", 3);
+        });
+
         jatos.onLoad(async function () {
             testJatosVars();
             testBatchSession();
