@@ -53,7 +53,7 @@
 
         function testJatosVars() {
             testVar(jatos.version, "jatos.version");
-            testVar(jatos.httpTimeout, "jatos.httpTimeout", 15000);
+            testVar(jatos.httpTimeout, "jatos.httpTimeout", 30000);
             testVar(jatos.httpRetry, "jatos.httpRetry", 5);
             testVar(jatos.httpRetryWait, "jatos.httpRetryWait", 1000);
             testVarJson(jatos.studyJsonInput, "jatos.studyJsonInput",
@@ -470,7 +470,7 @@
         }
 
         function checkTestNumber() {
-            testVar($("p.test").length, "Check test number", 72);
+            testVar($("p.test").length, "Check test number", 73);
         }
 
     </script>
