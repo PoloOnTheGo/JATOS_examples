@@ -7,17 +7,28 @@
 </head>
 
 <body>
-    <button id="startNextComponent" onclick="jatos.startNextComponent(' ... append before jatos.startNextComponent', 'msg via message parameter')">jatos.startNextComponent</button>
-    <button id="startLastComponent" onclick="jatos.startLastComponent(' ... append before jatos.startLastComponent', 'msg via message parameter')">jatos.startLastComponent</button>
-    <button id="startComponentByPos" onclick="jatos.startComponentByPos(1, ' ... append before jatos.startComponentByPos', 'msg via message parameter')">jatos.startComponentByPos</button>
-    <button id="abortStudyAjax" onclick="jatos.abortStudyAjax('Test study was aborted via an Ajax call')">jatos.abortStudyAjax</button>
+    <button id="startNextComponent"
+        onclick="jatos.startNextComponent(' ... append before jatos.startNextComponent', 'msg via message parameter')">jatos.startNextComponent</button>
+    <button id="startLastComponent"
+        onclick="jatos.startLastComponent(' ... append before jatos.startLastComponent', 'msg via message parameter')">jatos.startLastComponent</button>
+    <button id="startComponentByPos"
+        onclick="jatos.startComponentByPos(1, ' ... append before jatos.startComponentByPos', 'msg via message parameter')">jatos.startComponentByPos</button>
+    <button id="abortStudyAjax"
+        onclick="jatos.abortStudyAjax('Test study was aborted via an Ajax call')">jatos.abortStudyAjax</button>
     <button id="abortStudy" onclick="jatos.abortStudy('Test study was aborted')">jatos.abortStudy</button>
-    <button id="endStudyAjax" onclick="jatos.endStudyAjax({obj:'endStudyAjax append'}, true, 'Test study was finished via Ajax')">jatos.endStudyAjax</button>
-    <button id="endStudyNoShowEndPage" onclick="jatos.endStudy({obj:'endStudy noshowendpage append'}, true, 'Test study was finished via Ajax and no end page shown', false)">jatos.endStudy no end page</button>
-    <button id="endStudy" onclick="jatos.endStudy({obj:'endStudy append'}, true, 'Test study was finished')">jatos.endStudy</button>
-    <button id="endStudy" onclick="jatos.endStudyAndRedirect('http\:\/\/jatos.org', {obj:'endStudyAndRedirect append'}, true, 'Test study was finished')">jatos.endStudyAndRedirect</button>
-    <p class="test">Loading study assets with absolute path: <img src="Yes_Check_Circle.png" alt="Not loaded img with absolute path" height="42" width="42"></p>
-    <p class="test">Loading study assets with relative path: <img src="Yes_Check_Circle.png" alt="Not loaded img with absolute path" height="42" width="42"></p>
+    <button id="endStudyAjax"
+        onclick="jatos.endStudyAjax({obj:'endStudyAjax append'}, true, 'Test study was finished via Ajax')">jatos.endStudyAjax</button>
+    <button id="endStudyNoShowEndPage"
+        onclick="jatos.endStudy({obj:'endStudy noshowendpage append'}, true, 'Test study was finished via Ajax and no end page shown', false)">jatos.endStudy
+        no end page</button>
+    <button id="endStudy"
+        onclick="jatos.endStudy({obj:'endStudy append'}, true, 'Test study was finished')">jatos.endStudy</button>
+    <button id="endStudy"
+        onclick="jatos.endStudyAndRedirect('http\:\/\/jatos.org', {obj:'endStudyAndRedirect append'}, true, 'Test study was finished')">jatos.endStudyAndRedirect</button>
+    <p class="test">Loading study assets with absolute path: <img src="Yes_Check_Circle.png"
+            alt="Not loaded img with absolute path" height="42" width="42"></p>
+    <p class="test">Loading study assets with relative path: <img src="Yes_Check_Circle.png"
+            alt="Not loaded img with absolute path" height="42" width="42"></p>
 
     <script type="text/javascript">
         jatos.addAbortButton({
@@ -170,6 +181,40 @@
                 testVarJson(test, "jatos.batchSession.add", "true");
                 return $.Deferred().resolve().promise();
 
+                // add an object
+            }).then(function () {
+                return jatos.batchSession.add("/obj", { foo: "bar" });
+            }).then(function () {
+                var test = jatos.batchSession.test("/obj/foo", "bar");
+                testVarJson(test, "jatos.batchSession.add(object)", "true");
+                return $.Deferred().resolve().promise();
+
+                // add an array
+            }).then(function () {
+                return jatos.batchSession.add("/array", [1, 2, 3]);
+            }).then(function () {
+                var test1 = jatos.batchSession.test("/array/0", 1);
+                var test2 = jatos.batchSession.test("/array/1", 2);
+                var test3 = jatos.batchSession.test("/array/2", 3);
+                testVarJson(test1 && test2 && test3, "jatos.batchSession.add(array)", "true");
+                return $.Deferred().resolve().promise();
+
+                // add an element to an existing array
+            }).then(function () {
+                return jatos.batchSession.add("/array/2", "new");
+            }).then(function () {
+                var test = jatos.batchSession.test("/array/2", "new");
+                testVarJson(test, "jatos.batchSession.add(add element to array)", "true");
+                return $.Deferred().resolve().promise();
+
+                // add an element to the end of an existing array
+            }).then(function () {
+                return jatos.batchSession.add("/array/-", "last");
+            }).then(function () {
+                var test = jatos.batchSession.test("/array/4", "last");
+                testVarJson(test, "jatos.batchSession.add(add element to end of array)", "true");
+                return $.Deferred().resolve().promise();
+
                 // get
             }).then(function () {
                 var test = jatos.batchSession.get("a");
@@ -191,7 +236,7 @@
                 // getAll
             }).then(function () {
                 var test = jatos.batchSession.getAll();
-                testVarJson(test, "jatos.batchSession.getAll", '{"a":"foo","a2":"foo2","b":123}');
+                testVarJson(test, "jatos.batchSession.getAll", '{"a":"foo","a2":"foo2","b":123,"obj":{"foo":"bar"},"array":[1,2,"new",3,"last"]}');
                 return $.Deferred().resolve().promise();
 
                 // replace
@@ -234,7 +279,6 @@
             }).fail(function () {
                 addFail("jatos.batchSession");
             });
-
         }
 
         function testGroupSession() {
@@ -412,7 +456,7 @@
 
         async function testUpload() {
             return fetch("example.video")
-                .then(async function(response) {
+                .then(async function (response) {
                     await response.blob().then(async function (blob) {
                         await $.when(
                             jatos.uploadResultFile(blob, "example.video"),
@@ -433,13 +477,13 @@
         function testDownload() {
             var fail = false;
             var def1 = jatos.downloadResultFile("example.json")
-                .done((obj) => { 
-                    if (JSON.stringify(obj) !== JSON.stringify({ a: 1, b: "foo" })) fail = true; 
+                .done((obj) => {
+                    if (JSON.stringify(obj) !== JSON.stringify({ a: 1, b: "foo" })) fail = true;
                 })
                 .fail(() => fail = true);
             var def2 = jatos.downloadResultFile("example.txt")
-                .done((text) => { 
-                    if (text !== "foobar") fail = true; 
+                .done((text) => {
+                    if (text !== "foobar") fail = true;
                 })
                 .fail(() => fail = true);
             var def3 = jatos.downloadResultFile("example.video")
@@ -470,7 +514,7 @@
         }
 
         function checkTestNumber() {
-            testVar($("p.test").length, "Check test number", 73);
+            testVar($("p.test").length, "Check test number", 77);
         }
 
     </script>
