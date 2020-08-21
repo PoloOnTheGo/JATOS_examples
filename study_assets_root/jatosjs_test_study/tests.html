@@ -23,12 +23,14 @@
         onclick="jatos.endStudy({obj:'endStudy append'}, true, 'Test study was finished')">jatos.endStudy</button>
     <button id="endStudy"
         onclick="jatos.endStudyAndRedirect('http\:\/\/jatos.org', {obj:'endStudyAndRedirect append'}, true, 'Test study was finished')">jatos.endStudyAndRedirect</button>
-    <p class="test">Loading study assets with absolute path: <img src="Yes_Check_Circle.png"
+    <p class="test">Loading study assets with absolute path: <img src="你经常来这吗.png"
             alt="Not loaded img with absolute path" height="42" width="42"></p>
-    <p class="test">Loading study assets with relative path: <img src="Yes_Check_Circle.png"
+    <p class="test">Loading study assets with relative path: <img src="你经常来这吗.png"
             alt="Not loaded img with absolute path" height="42" width="42"></p>
 
     <script type="text/javascript">
+        jatos.catchAndLogErrors();
+
         jatos.addAbortButton({
             text: "Quit",
             confirm: true,
@@ -255,10 +257,32 @@
                     var test = jatos.batchSession.test("/a", "foo");
                     testVarJson(test, "jatos.batchSession.remove", "false");
                 })
+
+                .then(testBatchSessionVersioning)
                 
                 // onBatchSession
                 .then(() => testVarJson(onBatchSessionTest, "jatos.onBatchSession", "true"))
                 .catch(() => addFail("jatos.batchSession"));
+        }
+
+        function testBatchSessionVersioning() {
+            jatos.batchSessionVersioning = false;
+            var promise1 = jatos.batchSession.add("/1_" + jatos.studyResultId, "one");
+            var promise2 = jatos.batchSession.add("/2_" + jatos.studyResultId, "two");
+            var promise3 = jatos.batchSession.add("/3_" + jatos.studyResultId, "three");
+            return Promise.all([promise1, promise2, promise3])
+                .then(() => addSuccess("jatos.batchSessionVersioning (off)"))
+                .then(() => {
+
+                    jatos.batchSessionVersioning = true;
+                    var promise4 = jatos.batchSession.add("/4_" + jatos.studyResultId, "four");
+                    var promise5 = jatos.batchSession.add("/5_" + jatos.studyResultId, "five");
+                    // The promise must fail now since we send 2 updates simultaneously and versioning is on
+                    Promise.all([promise4, promise5])
+                        .then(() => addFail("jatos.batchSessionVersioning (on)"))
+                        .catch(() => addSuccess("jatos.batchSessionVersioning (on)"));
+                })
+                .catch(() => addFail("jatos.batchSessionVersioning"));
         }
 
         function testGroupSession() {
@@ -314,7 +338,7 @@
                 // getAll
                 .then(() => {
                     var test = jatos.groupSession.getAll();
-                    testVarJson(test, "jatos.batchSession.getAll", '{"a":"foo","a2":"foo2","b":123}');
+                    testVarJson(test, "jatos.groupSession.getAll", '{"a":"foo","a2":"foo2","b":123}');
                 })
 
                 // replace
@@ -345,9 +369,31 @@
                     testVarJson(test, "jatos.groupSession.remove", "false");
                 })
 
+                .then(testGroupSessionVersioning)
+
                 // Leave group
                 .then(() => jatos.leaveGroup())
                 .catch(() => addFail("jatos.groupSession"));
+        }
+
+        function testGroupSessionVersioning() {
+            jatos.groupSessionVersioning = false;
+            var promise1 = jatos.groupSession.add("/1_" + jatos.studyResultId, "one");
+            var promise2 = jatos.groupSession.add("/2_" + jatos.studyResultId, "two");
+            var promise3 = jatos.groupSession.add("/3_" + jatos.studyResultId, "three");
+            return Promise.all([promise1, promise2, promise3])
+                .then(() => addSuccess("jatos.groupSessionVersioning (off)"))
+                .then(() => {
+
+                    jatos.groupSessionVersioning = true;
+                    var promise4 = jatos.groupSession.add("/4_" + jatos.studyResultId, "four");
+                    var promise5 = jatos.groupSession.add("/5_" + jatos.studyResultId, "five");
+                    // The promise must fail now since we send 2 updates simultaneously and versioning is on
+                    Promise.all([promise4, promise5])
+                        .then(() => addFail("jatos.groupSessionVersioning (on)"))
+                        .catch(() => addSuccess("jatos.groupSessionVersioning (on)"));
+                })
+                .catch(() => addFail("jatos.groupSessionVersioning"));
         }
 
         function testSubmitResultData() {
@@ -405,9 +451,9 @@
                 .then(() => addSuccess("jatos.uploadResultFile (example.json)"))
                 .catch(() => addFail("jatos.uploadResultFile (example.json)"));
 
-            var promise3 = jatos.uploadResultFile("foobar", "example.txt")
-                .then(() => addSuccess("jatos.uploadResultFile (example.txt)"))
-                .catch(() => addFail("jatos.uploadResultFile (example.txt)"));
+            var promise3 = jatos.uploadResultFile("foobar", "你经常来这吗.txt")
+                .then(() => addSuccess("jatos.uploadResultFile (你经常来这吗.txt)"))
+                .catch(() => addFail("jatos.uploadResultFile (你经常来这吗.txt)"));
 
             return Promise.all([promise1, promise2, promise3]);
         }
@@ -423,15 +469,15 @@
                 })
                 .catch(() => addFail("jatos.downloadResultFile (example.json)"));
 
-            var promise2 = jatos.downloadResultFile("example.txt")
+            var promise2 = jatos.downloadResultFile("你经常来这吗.txt")
                 .then((text) => {
                     if (text == "foobar") {
-                        addSuccess("jatos.downloadResultFile (example.txt)");
+                        addSuccess("jatos.downloadResultFile (你经常来这吗.txt)");
                     } else {
-                        addFail("jatos.downloadResultFile (example.txt)");
+                        addFail("jatos.downloadResultFile (你经常来这吗.txt)");
                     }
                 })
-                .catch(() => addFail("jatos.downloadResultFile (example.txt)"));
+                .catch(() => addFail("jatos.downloadResultFile (你经常来这吗.txt)"));
 
             var promise3 = jatos.downloadResultFile("example.video")
                 .then((blob) => { 
@@ -466,16 +512,16 @@
         }
 
         function testHttpLoopCounter() {
-            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 23);
+            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 26);
         }
 
         function checkTestNumber() {
-            testVar($("p.test").length, "Check test number", 82);
+            testVar($("p.test").length, "Check test number", 86);
         }
 
         function callEndStudyAjax() {
             jatos.endStudyAjax({obj:'endStudyAjax append'}, true, 'Test study was finished via Ajax')
-                .then(() => console.log('jatos.endStudyAjax - success'))
+                .then(() => console.log2('jatos.endStudyAjax - success'))
                 .catch(() => console.log('jatos.endStudyAjax - fail'));
         }
 
