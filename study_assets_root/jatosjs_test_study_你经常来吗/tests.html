@@ -68,22 +68,22 @@
             testVar(jatos.httpRetry, "jatos.httpRetry", 5);
             testVar(jatos.httpRetryWait, "jatos.httpRetryWait", 1000);
             testVarJson(jatos.studyJsonInput, "jatos.studyJsonInput",
-                '{"sa":"test","sb":5,"sc":[1,2,3],"sd":{"se":"foo","sf":"bla"}}');
+                '{"sa":"test","sb":5,"sc":[1,2,3],"sd":{"se":"foo","sf":"אבטיח"}}');
             testVar(jatos.studyLength, "jatos.studyLength", 1);
             testVar(jatos.studyProperties.id, "jatos.studyProperties.id");
             testVar(jatos.studyProperties.uuid, "jatos.studyProperties.uuid", "79d0a52a-d5d3-4461-9d9b-6fd9f386c04a");
             testVar(jatos.studyProperties.description, "jatos.studyProperties.description",
-                "Tests for JATOS' jatos.js development");
+                "Tests for JATOS' jatos.js development (אבטיח)");
             testVar(jatos.studyProperties.descriptionHash, "jatos.studyProperties.descriptionHash",
-                "a7da5fc6d901a2f7d9a1b95d62843f62fec9e913d1e3e359721a60203ea31dac");
-            testVar(jatos.studyProperties.dirName, "jatos.studyProperties.dirName", "jatosjs_test_study");
+                "ae880f0b46a4a1dddd30c278752358c14078562528fe6b33d6cbed3fe7e4195e");
+            testVar(jatos.studyProperties.dirName, "jatos.studyProperties.dirName", "jatosjs_test_study_你经常来吗");
             testVar(jatos.studyProperties.groupStudy, "jatos.studyProperties.groupStudy", true);
             testVar(jatos.studyProperties.locked, "jatos.studyProperties.locked", false);
-            testVar(jatos.studyProperties.title, "jatos.studyProperties.title", "jatos.js Test Study");
+            testVar(jatos.studyProperties.title, "jatos.studyProperties.title", "jatos.js Test Stüdy (你经常来吗)");
             testVarJson(jatos.studySessionData, "jatos.studySessionData");
             jatos.componentList.length === 1 ? addSuccess("jatos.componentList") : addFail("jatos.componentList");
             testVarJson(jatos.componentJsonInput, "jatos.componentJsonInput",
-                '{"ca":"test","cb":5,"cc":[1,2,3],"cd":{"ce":"foo","cf":"bla"}}');
+                '{"ca":"test","cb":5,"cc":[1,2,3],"cd":{"ce":"foo","cf":"אבטיח"}}');
             testVar(jatos.componentPos, "jatos.componentPos", 1);
             testVar(jatos.componentProperties.id, "jatos.componentProperties.id");
             testVar(jatos.componentProperties.uuid, "jatos.componentProperties.uuid",
