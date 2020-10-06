@@ -514,12 +514,16 @@
             jatos.log("This is a log test 1 originating in the client side.");
             jatos.log("This is a log test 2 originating in the client side.");
             jatos.log("This is a log test 3 originating in the client side.");
-            jatos.log("This is a log test 4 originating in the client side.");
+            jatos.log(`This is a log test 4 with line breaks and HTML:
+<html>
+    This is a log test 1 originating in the client side.
+</html>`
+            );
             jatos.log("This is a log test 5 with chinese characters: 你经常来这吗.");
         }
 
         function testHttpLoopCounter() {
-            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 26);
+            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 25);
         }
 
         function checkTestNumber() {
