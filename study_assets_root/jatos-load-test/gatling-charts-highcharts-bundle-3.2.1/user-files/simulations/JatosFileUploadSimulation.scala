@@ -1,5 +1,6 @@
 
 import scala.concurrent.duration._
+import scala.util.Random
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -66,7 +67,7 @@ class JatosFileUploadSimulation extends Simulation {
   ).exec(
     http("Post study session data").post("/publix/${studyId}/studySessionData?srid=${studyResultId}").headers(header_ajax).body(StringBody("""{"foo":"bar"}"""))
   ).exec(
-    http("Post result").post("/publix/${studyId}/${componentId1}/resultData?srid=${studyResultId}").headers(header_ajax).body(StringBody(StringBody(Random.alphanumeric.take(100000).mkString("")))
+    http("Post result").post("/publix/${studyId}/${componentId1}/resultData?srid=${studyResultId}").headers(header_ajax).body(StringBody(Random.alphanumeric.take(100000).mkString("")))
   ).exec(ws("Close batch channel").close)
 
 // ### 2. Component ###

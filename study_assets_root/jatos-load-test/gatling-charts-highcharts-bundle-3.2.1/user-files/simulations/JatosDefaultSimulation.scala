@@ -11,10 +11,10 @@ import java.net.URLDecoder
 class JatosDefaultSimulation extends Simulation {
 
   val httpProtocol = http
-//    .baseUrl("https://cortex.jatos.org")
-//    .wsBaseUrl("wss://cortex.jatos.org")
-    .baseUrl("http://localhost:9000")
-    .wsBaseUrl("ws://localhost:9000")
+    .baseUrl("https://jatos.mindprobe.eu")
+    .wsBaseUrl("wss://jatos.mindprobe.eu")
+//    .baseUrl("http://localhost:9000")
+//    .wsBaseUrl("ws://localhost:9000")
     .inferHtmlResources()
     .acceptHeader("*/*")
     .acceptEncodingHeader("gzip, deflate")
@@ -39,10 +39,10 @@ class JatosDefaultSimulation extends Simulation {
 
 
   val scn = scenario("JatosDefaultSimulation")
-    .exec(session => session.set("batchId", "3"))
-    .exec(session => session.set("studyId", "3"))
-    .exec(session => session.set("componentId1", "8"))
-    .exec(session => session.set("componentId2", "9"))
+    .exec(session => session.set("batchId", "4"))
+    .exec(session => session.set("studyId", "8"))
+    .exec(session => session.set("componentId1", "2"))
+    .exec(session => session.set("componentId2", "3"))
     .exec(session => session.set("filename", "1577217737269.video")) //"example.png" //"1577217737269.video" // "ngrok"
 
 // ### 1. Component ###
