@@ -1,0 +1,10 @@
+{
+  "simulation": "JatosDefaultSimulation",
+  "simulationId": "jatosdefaultsimulation",
+  "start": 1614720710225,
+  "description": "",
+  "scenarios": ["JatosDefaultSimulation"],
+  "assertions": [
+
+  ]
+}
