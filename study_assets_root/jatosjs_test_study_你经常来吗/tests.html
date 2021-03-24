@@ -20,9 +20,9 @@
         onclick="jatos.endStudy({obj:'endStudy noshowendpage append'}, true, 'Test study was finished via Ajax and no end page shown', false)">jatos.endStudy
         no end page</button>
     <button id="endStudy"
-        onclick="jatos.endStudy({obj:'endStudy append'}, true, 'Test study was finished (你经常来这吗)')">jatos.endStudy</button>
+        onclick="jatos.endStudy({obj:'endStudy append'}, true, 'Test study was finished (😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧)')">jatos.endStudy</button>
     <button id="endStudy"
-        onclick="jatos.endStudyAndRedirect('http\:\/\/jatos.org', {obj:'endStudyAndRedirect append'}, true, 'Test study was finished (你经常来这吗)')">jatos.endStudyAndRedirect</button>
+        onclick="jatos.endStudyAndRedirect('http\:\/\/jatos.org', {obj:'endStudyAndRedirect append'}, true, 'Test study was finished (😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧)')">jatos.endStudyAndRedirect</button>
     <p class="test">Loading study assets with absolute path: <img id="imgAbsolutePath" src=""
             alt="Not loaded img with absolute path" height="42" width="42"></p>
     <p class="test">Loading study assets with relative path: <img id="imgRelativePath" src="你经常来这吗.png"
@@ -30,6 +30,12 @@
 
     <script type="text/javascript">
         jatos.catchAndLogErrors();
+        jatos.waitSendDataOverlayConfig = {
+            text: "Daten werden versandt. Bitte warten. 😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧",
+            show: true,
+            showImg: true,
+            style: "color: red"
+        };
 
         jatos.addAbortButton({
             text: "Quit",
@@ -37,7 +43,8 @@
             confirmText: "You really wanne quit?",
             tooltip: "Don't you dare clicking here!",
             msg: "This bastard aborted the mission.",
-            style: "color:green"
+            style: "color:green",
+            action: jatos.abortStudy
         });
 
         var howOftenWasJatosOnLoadCalled = 0;
@@ -55,6 +62,7 @@
             testGroupSession();
             await testSubmitResultData();
             await testAppendResultData();
+            await testAppendLargeResultData();
             testJatosLog();
             await testUpload();
             await testDownload();
@@ -182,14 +190,14 @@
                     var test = jatos.batchSession.test("/b", 123);
                     testVarJson(test, "jatos.batchSession.add", "true");
                 })
-                
+
                 // add an object
                 .then(() => jatos.batchSession.add("/obj", { foo: "bar" }))
                 .then(() => {
                     var test = jatos.batchSession.test("/obj/foo", "bar");
                     testVarJson(test, "jatos.batchSession.add(object)", "true");
                 })
-                
+
                 // add an array
                 .then(() => jatos.batchSession.add("/array", [1, 2, 3]))
                 .then(() => {
@@ -205,14 +213,14 @@
                     var test = jatos.batchSession.test("/array/2", "new");
                     testVarJson(test, "jatos.batchSession.add(add element to array)", "true");
                 })
-                
+
                 // add an element to the end of an existing array
                 .then(() => jatos.batchSession.add("/array/-", "last"))
                 .then(() => {
                     var test = jatos.batchSession.test("/array/4", "last");
                     testVarJson(test, "jatos.batchSession.add(add element to end of array)", "true");
                 })
-                
+
                 // get
                 .then(() => {
                     var test = jatos.batchSession.get("a");
@@ -230,27 +238,27 @@
                     var test = jatos.batchSession.defined("/a");
                     testVarJson(test, "jatos.batchSession.defined", "true");
                 })
-                
+
                 // getAll
                 .then(() => {
                     var test = jatos.batchSession.getAll();
                     testVarJson(test, "jatos.batchSession.getAll", '{"a":"你经常来这吗","a2":"foo2","b":123,"obj":{"foo":"bar"},"array":[1,2,"new",3,"last"]}');
                 })
-                
+
                 // replace
                 .then(() => jatos.batchSession.replace("/a", "bla"))
                 .then(() => {
                     var test = jatos.batchSession.test("/a", "bla");
                     testVarJson(test, "jatos.batchSession.replace", "true");
                 })
-            
+
                 // copy
                 .then(() => jatos.batchSession.copy("/a", "/c"))
                 .then(() => {
                     var test = jatos.batchSession.test("/a", "bla") && jatos.batchSession.test("/c", "bla");
                     testVarJson(test, "jatos.batchSession.copy", "true");
                 })
-                
+
                 // move
                 .then(() => jatos.batchSession.move("/c", "/d"))
                 .then(() => {
@@ -266,7 +274,7 @@
                 })
 
                 .then(testBatchSessionVersioning)
-                
+
                 // onBatchSession
                 .then(() => testVarJson(onBatchSessionTest, "jatos.onBatchSession", "true"))
                 .catch(() => addFail("jatos.batchSession"));
@@ -323,7 +331,7 @@
                     var test = jatos.groupSession.test("/b", 123);
                     testVarJson(test, "jatos.groupSession.add", "true");
                 })
-                
+
                 // get
                 .then(() => {
                     var test = jatos.groupSession.get("a");
@@ -421,14 +429,29 @@
             var promise6 = jatos.appendResultData(" ... append 6");
             var promise7 = jatos.appendResultData(" ... append 7");
             var promise8 = jatos.appendResultData(" ... append 8");
-            var promise9 = jatos.appendResultData(" ... append 9");
-            var promise10 = jatos.appendResultData(" ... append 10 你经常来这吗 ... ");
+            var promise9 = jatos.appendResultData(" ... append 9 你经常来这吗");
+            var promise10 = jatos.appendResultData(" ... append 10 😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧 ... ");
             var obj = { "obj": "append 11" };
-            var promise11 = jatos.appendResultData(obj)
+            var promise11 = jatos.appendResultData(obj);
 
             return Promise.all([promise1, promise2, promise3, promise4, promise5, promise6, promise7, promise8, promise9, promise10, promise11])
                 .then(() => addSuccess("jatos.appendResultData"))
                 .catch(() => addFail("jatos.appendResultData"));
+        }
+
+        function testAppendLargeResultData() {
+            var promises = [];
+            for (i = 0; i < 10; i++) {
+                promises.push(jatos.appendResultData("\nappend large " + i + " - " + generateRandomString(5000)));
+            }
+            return Promise.all(promises)
+                .then(() => addSuccess("jatos.appendLargeResultData"))
+                .catch(() => addFail("jatos.appendLargeResultData"));
+        }
+
+        function generateRandomString(length) {
+            var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return Array.apply(null, Array(length)).map(function () { return chars.charAt(Math.floor(Math.random() * chars.length)); }).join('');
         }
 
         function testSetStudySessionData() {
@@ -487,7 +510,7 @@
                 .catch(() => addFail("jatos.downloadResultFile (你经常来这吗.txt)"));
 
             var promise3 = jatos.downloadResultFile("example.video")
-                .then((blob) => { 
+                .then((blob) => {
                     if (blob instanceof Blob) {
                         addSuccess("jatos.downloadResultFile (example.video)")
                     } else {
@@ -497,7 +520,7 @@
                 .catch(() => addFail("jatos.downloadResultFile (example.video)"));
 
             var promise4 = jatos.downloadResultFile("example.video")
-                .then((blob) => { 
+                .then((blob) => {
                     if (blob instanceof Blob) {
                         addSuccess("jatos.downloadResultFile (example.video)")
                     } else {
@@ -520,24 +543,25 @@
 </html>`
             );
             jatos.log("This is a log test 5 with chinese characters: 你经常来这吗.");
+            jatos.log("This is a log test 5 with emojis: 😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧.");
         }
 
         function testHttpLoopCounter() {
-            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 25);
+            testVar(jatos.getHttpLoopCounter(), "jatos.getHttpLoopCounter", 36);
         }
 
         function checkTestNumber() {
-            testVar($("p.test").length, "Check test number", 86);
+            testVar($("p.test").length, "Check test number", 87);
         }
 
         function callEndStudyAjax() {
-            jatos.endStudyAjax({obj:'endStudyAjax append'}, true, 'Test study was finished via Ajax (你经常来这吗)')
-                .then(() => console.log2('jatos.endStudyAjax - success'))
+            jatos.endStudyAjax({ obj: 'endStudyAjax append' }, true, 'Test study was finished via Ajax (😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧)')
+                .then(() => console.log('jatos.endStudyAjax - success'))
                 .catch(() => console.log('jatos.endStudyAjax - fail'));
         }
 
         function callAbortStudyAjax() {
-            jatos.abortStudyAjax('Test study was aborted via an Ajax call (你经常来这吗)')
+            jatos.abortStudyAjax('Test study was aborted via an Ajax call (😼🙀🧞‍♀️🤹‍♀️👨‍👨‍👧‍👧)')
                 .then(() => console.log('jatos.abortStudyAjax - success'))
                 .catch((error) => console.log('jatos.abortStudyAjax - fail'));
         }
