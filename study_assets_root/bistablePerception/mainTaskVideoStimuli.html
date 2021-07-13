@@ -19,7 +19,7 @@
   <video id="bistableVideo" class="video-js vjs-default-skin" preload="auto" width="640" height="264" autoplay="true"
     loop="true" data-setup='{"example_option":true}'></video>
   <p id="feedbackKeyPress"></p>
-  <p id="quit">Quit Study</p>
+<!--  <p id="quit">Quit Study</p>-->
 
   <script>
     // Useful docs: https://docs.videojs.com/docs/api/player.html
@@ -34,6 +34,7 @@
     jatos.onLoad(function () {
       var trial = 0;
       runTrials(trial);
+      jatos.addAbortButton();
     });
 
     function runTrials(trial) {
@@ -76,7 +77,7 @@
     };
 
     function endStudy() {
-      jatos.submitResultData(resultData, jatos.endStudy);
+      jatos.startNextComponent(resultData);
     };
 
     $(window).on('keydown', function (e) {
@@ -120,13 +121,6 @@
       responseTimeArray.push(performance.now());
     };
 
-    // What to do if worker presses the abort button
-    $("#quit").click(function () {
-      var answer = confirm("Do you really want to quit this study?");
-      if (answer == true) {
-        jatos.abortStudy("Worker decided to abort");
-      }
-    });
   </script>
 </body>
 
