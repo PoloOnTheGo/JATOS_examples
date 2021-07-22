@@ -4,25 +4,25 @@
     <meta name="robots" content="noindex">
     <title>The Experiment Factory: Preview</title>
     
-<link rel='stylesheet' type='text/css' href='/study_assets/angling_risk_task_always_sunny/static/jspsych.css'>
-<link rel='stylesheet' type='text/css' href='/study_assets/angling_risk_task_always_sunny/static/default_style.css'>
-<link rel='stylesheet' type='text/css' href='/study_assets/angling_risk_task_always_sunny/style.css'>
+<link rel='stylesheet' type='text/css' href='static/jspsych.css'>
+<link rel='stylesheet' type='text/css' href='static/default_style.css'>
+<link rel='stylesheet' type='text/css' href='style.css'>
 </head>
 
 <body>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jquery.min.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-text.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-poldrack-text.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-poldrack-instructions.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-attention-check.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-poldrack-single-stim.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-call-function.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-survey-text.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/jspsych-single-stim-button.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/static/poldrack_utils.js'></script>
-<script src='/study_assets/angling_risk_task_always_sunny/experiment.js'></script>
-<script src="/assets/javascripts/jatos.js"></script>
+<script src='static/jquery.min.js'></script>
+<script src='static/jspsych.js'></script>
+<script src='static/jspsych-text.js'></script>
+<script src='static/jspsych-poldrack-text.js'></script>
+<script src='static/jspsych-poldrack-instructions.js'></script>
+<script src='static/jspsych-attention-check.js'></script>
+<script src='static/jspsych-poldrack-single-stim.js'></script>
+<script src='static/jspsych-call-function.js'></script>
+<script src='static/jspsych-survey-text.js'></script>
+<script src='static/jspsych-single-stim-button.js'></script>
+<script src='static/poldrack_utils.js'></script>
+<script src='experiment.js'></script>
+<script src="jatos.js"></script>
 
 <script>
 $( document ).ready(function() {
@@ -37,13 +37,14 @@ $( document ).ready(function() {
 			display_element: "getDisplayElement",
 			fullscreen: true,
 			on_trial_finish: function(data){
-				addID('angling_risk_task_always_sunny')
+				addID('angling_risk_task_always_sunny');
+				jatos.addAbortButton({style: "bottom: 6%; right: 6%; border-style: solid; border-color: cornflowerblue; border-radius: 10px;"});
 			},
 			on_finish: function(data){
 				// Changed for JATOS: Instead of displaying the data submit them to JATOS.
 				var resultJson = JSON.stringify(jsPsych.data.getData());
 				expfactory_finished = true;
-				jatos.submitResultData(resultJson, jatos.startNextComponent);
+				jatos.startNextComponent(resultJson);
 			}
 		});
 	}
