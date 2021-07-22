@@ -22,7 +22,6 @@
 	<div id="startButtonWrap">
 		<button id="startButton">Start</button>
 	</div>
-	<p id="quit">Quit Study</p>
 
 	<script>
 		var responseBar = document.querySelector('#responseBar');
@@ -41,6 +40,7 @@
 
 		jatos.onLoad(function () {
 			startNextTrial();
+			jatos.addAbortButton();
 		});
 
 		function startNextTrial() {
@@ -101,16 +101,8 @@
 		};
 
 		function endStudy() {
-			jatos.submitResultData(resultData, jatos.endStudy);
+			jatos.startNextComponent(resultData);
 		};
-
-		// What to do if the participant presses the abort button
-		document.querySelector("#quit").addEventListener('click', () => {
-			var answer = confirm("Do you really want to quit this study?");
-			if (answer == true) {
-				jatos.abortStudy("Worker decided to abort");
-			}
-		});
 
 		function addMultipleEventListener(element, events, handler) {
 			events.forEach(e => element.addEventListener(e, handler, false));
