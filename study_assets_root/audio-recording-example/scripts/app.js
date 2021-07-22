@@ -126,68 +126,68 @@ function mainFunction() {
     console.log('getUserMedia not supported on your browser!');
   }
 
-  function visualize(stream) {
-    if (!audioCtx) {
-      audioCtx = new AudioContext();
-    }
+  window.onresize();
+}
 
-    const source = audioCtx.createMediaStreamSource(stream);
+function visualize(stream) {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
 
-    const analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 2048;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+  const source = audioCtx.createMediaStreamSource(stream);
 
-    source.connect(analyser);
-    //analyser.connect(audioCtx.destination);
+  const analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
 
-    draw()
+  source.connect(analyser);
+  //analyser.connect(audioCtx.destination);
 
-    function draw() {
-      const WIDTH = canvas.width
-      const HEIGHT = canvas.height;
+  draw()
 
-      requestAnimationFrame(draw);
+  function draw() {
+    const WIDTH = canvas.width
+    const HEIGHT = canvas.height;
 
-      analyser.getByteTimeDomainData(dataArray);
+    requestAnimationFrame(draw);
 
-      canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+    analyser.getByteTimeDomainData(dataArray);
 
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+    canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
-      canvasCtx.beginPath();
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
 
-      let sliceWidth = WIDTH * 1.0 / bufferLength;
-      let x = 0;
+    canvasCtx.beginPath();
+
+    let sliceWidth = WIDTH * 1.0 / bufferLength;
+    let x = 0;
 
 
-      for (let i = 0; i < bufferLength; i++) {
+    for (let i = 0; i < bufferLength; i++) {
 
-        let v = dataArray[i] / 128.0;
-        let y = v * HEIGHT / 2;
+      let v = dataArray[i] / 128.0;
+      let y = v * HEIGHT / 2;
 
-        if (i === 0) {
-          canvasCtx.moveTo(x, y);
-        } else {
-          canvasCtx.lineTo(x, y);
-        }
-
-        x += sliceWidth;
+      if (i === 0) {
+        canvasCtx.moveTo(x, y);
+      } else {
+        canvasCtx.lineTo(x, y);
       }
 
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
-      canvasCtx.stroke();
-
+      x += sliceWidth;
     }
-  }
 
-  window.onresize = function () {
-    canvas.width = mainSection.offsetWidth;
-  }
+    canvasCtx.lineTo(canvas.width, canvas.height / 2);
+    canvasCtx.stroke();
 
-  window.onresize();
+  }
+}
+
+window.onresize = function () {
+  canvas.width = mainSection.offsetWidth;
 }
 
 jatos.onLoad(function () {
