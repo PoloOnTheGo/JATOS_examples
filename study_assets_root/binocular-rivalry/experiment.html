@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="jatos.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/experiment.css" />
+    <meta name="viewport"
+        content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+</head>
+
+<body>
+    <div id="instructions">
+        <p>Press the button</p>
+    </div>
+    <div id="gabor">
+        <div class="gaborWrapper">
+            <div class="gaborRed"></div>
+        </div>
+        <div class="gaborWrapper">
+            <div class="gaborGreen"></div>
+        </div>
+    </div>
+
+    <script>
+
+        var resultData = [];
+
+        jatos.onLoad(() => {
+            document.addEventListener('click', event => {
+                document.querySelector("#instructions").style.display = "none";
+                document.documentElement.requestFullscreen();
+                document.documentElement.requestPointerLock();
+                setTimeout(runGabor, 4000);
+            });
+            jatos.addAbortButton({text: "X", style:"color: #fff;"});
+        });
+
+        function runGabor() {
+            document.querySelector("#gabor").style.display = "block";
+            recordMouseClicks();
+            resultData.push({ event: "start", time: performance.now() });
+            setTimeout(() => { jatos.startNextComponent(resultData)}, 30000);
+        }
+
+        function recordMouseClicks() {
+            document.addEventListener('contextmenu', event => event.preventDefault());
+            document.addEventListener('mousedown', event => {
+                switch (event.button) {
+                    case 0:
+                        resultData.push({ event: "left", time: performance.now() });
+                        break;
+                    case 2:
+                        resultData.push({ event: "right", time: performance.now() });
+                        break;
+                }
+            });
+        }
+
+    </script>
+</body>

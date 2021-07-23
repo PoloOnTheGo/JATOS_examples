@@ -1,0 +1,79 @@
+* {
+	margin:0;
+	padding:0;
+}
+
+html, body {
+	background-color: #000;
+}
+
+#instructions {
+	width: 50%;
+}
+
+#instructions p {
+	color: #fff;
+	transform: translateX(-25%) translateY(-25%) rotate(90deg);
+	position: absolute;
+	top: 15%;
+	left: 10%;
+}
+
+#gabor {
+	display: none;
+}
+
+.gaborWrapper {
+	height: 50vh;
+	width: 100%;
+	position: relative;
+}
+
+.gaborRed {
+	height: 25vh;
+	width: 25vh;
+	margin: -12.5vh 0 0 -12.5vh;
+	top: 50%;
+	left: 50%;
+	position: absolute;
+	filter: blur(2px);
+	border-radius: 50%;
+	animation: object-rotate-clockwise 10s linear infinite;
+	background:
+		radial-gradient(closest-side, #fff0, #000f), 
+		repeating-linear-gradient(to right,	#f00, #000 5px,	#f00 15px, #000 10px);
+}
+.gaborGreen {
+	height: 25vh;
+	width: 25vh;
+	margin: -12.5vh 0 0 -12.5vh;
+	top: 50%;
+	left: 50%;
+	position: absolute;
+	filter: blur(2px);
+	border-radius: 50%;
+	animation: object-rotate-anticlockwise 10s linear infinite;
+	background:
+		radial-gradient(closest-side, #fff0, #000f), 
+		repeating-linear-gradient(to right,	#090, #000 5px,	#090 15px, #000 10px);
+}
+  
+@keyframes
+object-rotate-clockwise {
+	0% {
+		transform: rotate(-90deg);
+	} 
+	100% {
+		transform: rotate(270deg);
+	}  
+}
+
+@keyframes
+object-rotate-anticlockwise {
+	0% {
+		transform: rotate(360deg);
+	} 
+	100% {
+		transform: rotate(0);
+	}  
+}
