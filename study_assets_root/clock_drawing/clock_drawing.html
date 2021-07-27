@@ -31,13 +31,16 @@
         show_clickable_nav: true
     });
 
-    jsPsych.init({
-        timeline: timeline,
-        default_iti: 1000,
-        show_progress_bar: false,
-        on_trial_start: jatos.addAbortButton,
-        on_finish: () => jatos.startNextComponent(jsPsych.data.get().json())
+    jatos.onLoad(function() {
+        jsPsych.init({
+            timeline: timeline,
+            default_iti: 1000,
+            show_progress_bar: false,
+            on_trial_start: jatos.addAbortButton,
+            on_finish: () => jatos.startNextComponent(jsPsych.data.get().json())
+        });
     });
+    
 </script>
 
 </html>
