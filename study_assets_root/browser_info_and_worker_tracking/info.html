@@ -40,6 +40,7 @@
         jatos.onLoad(() => {
             addEventHandlers();
             fillInfo();
+            jatos.addAbortButton();
         });
 
         function addEventHandlers() {
@@ -265,7 +266,7 @@
         }
 
         function end() {
-            jatos.submitResultData({ browserInfo, systemInfo, geoIpInfo, events, mousemoves }, jatos.endStudy);
+            jatos.startNextComponent({ browserInfo, systemInfo, geoIpInfo, events, mousemoves });
         }
 
     </script>
