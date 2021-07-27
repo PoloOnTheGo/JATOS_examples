@@ -17,7 +17,6 @@
         <button id="startButton" type="button" class="btn btn-startTrial">Start</button>
     </div>
     <img id="changingImage" />
-    <p id="quit">Quit Study</p>
 
     <script>
 
@@ -34,6 +33,7 @@
 
         jatos.onLoad(function () {
             prepareTrial();
+            jatos.addAbortButton();
         });
 
         function prepareTrial() {
@@ -108,14 +108,6 @@
         function endComponent() {
             jatos.startNextComponent(resultData);
         };
-
-        // What to do if worker presses the abort button
-        $("#quit").click(function () {
-            var answer = confirm("Do you really want to quit this study?");
-            if (answer == true) {
-                jatos.abortStudy("Worker decided to abort");
-            }
-        });
 
         function isEven(n) {
             return n % 2 == 0;
