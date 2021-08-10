@@ -10,7 +10,7 @@
     <button onclick="jatos.startNextComponent()" style="position:absolute;top:55%;left:15%;">End</button>
 
     <script type="text/javascript">
-
+        jatos.addAbortButton();
         function download() {
             jatos.downloadResultFile("canvas.png").done((blob) => {
                 document.getElementById("canvasimg").src = URL.createObjectURL(blob);

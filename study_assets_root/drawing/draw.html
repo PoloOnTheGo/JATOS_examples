@@ -16,7 +16,7 @@
     var x = "black",
         y = 2;
 
-    function init() {
+    jatos.onLoad(() => {
         canvas = document.getElementById('can');
         ctx = canvas.getContext("2d");
         w = canvas.width;
@@ -34,7 +34,9 @@
         canvas.addEventListener("mouseout", function (e) {
             findxy('out', e)
         }, false);
-    }
+
+        jatos.addAbortButton();
+    });
 
     function color(obj) {
         switch (obj.id) {
