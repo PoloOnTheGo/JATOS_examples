@@ -2,8 +2,8 @@
 
 <html>
 <head>
-<script src="/study_assets/hello_world/libs/jquery-1.11.1.min.js"></script>
-<script src="/assets/javascripts/jatos.js"></script>
+<script src="libs/jquery-1.11.1.min.js"></script>
+<script src="jatos.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -17,8 +17,9 @@
 			$(document).keydown(function(event) {
 				// Send back some result data to JATOS
 				var componentResultData = "These are some very scientific result data.";
-				jatos.submitResultData(componentResultData, jatos.startNextComponent);
+				jatos.startNextComponent(componentResultData);
 			});
+			jatos.addAbortButton();
 		});
 	</script>
 </body>
