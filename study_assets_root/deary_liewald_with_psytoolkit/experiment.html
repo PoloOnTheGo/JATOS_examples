@@ -17,6 +17,8 @@
                 }
             }
 
+            jatos.addAbortButton();
+
             function whenloaded() {
                 tmp1 = document.getElementById('exp');
                 tmp2 = tmp1.getContext('2d');
@@ -907,7 +909,7 @@
                 var a = document.createElement("BUTTON")
                   , b = document.createTextNode("End Experiment");
                 a.appendChild(b);
-                a.setAttribute("onclick", 'jatos.submitResultData(outputdata, jatos.endStudy);');
+                a.setAttribute("onclick", 'jatos.startNextComponent(outputdata);');
                 document.body.appendChild(a);
             }
             var instruction_simple_task = 1
