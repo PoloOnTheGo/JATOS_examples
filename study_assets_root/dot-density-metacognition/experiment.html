@@ -43,9 +43,6 @@
                 <p>That's it, well done! Click on End to submit your data.</p>
                 <button class="pure-button">End</button>
             </div>
-            <div class="is-right">
-                <button id="cancel-button" class="pure-button" onclick="jatos.abortStudy()">Cancel Study</button>
-            </div>
         </div>
     </div>
 
@@ -91,6 +88,8 @@
                 $("#start").hide();
                 run();
             });
+
+            jatos.addAbortButton();
         });
 
         async function run() {
@@ -114,7 +113,7 @@
             $("#end").show();
             $("#end button").click(() => {
                 // Submit result data back to JATOS
-                jatos.submitResultData(result_data, jatos.endStudy);
+                jatos.startNextComponent(result_data);
             });
         }
 
