@@ -13,7 +13,7 @@
     <p id="text"></p>
     <div id="buttons">
         <button id="agreeButton">I agree</button>
-        <button id="cancelButton">I disagree</button>
+        <button id="disagreeButton">I disagree</button>
     </div>
 
     <script type="text/javascript">
@@ -28,7 +28,7 @@
             jatos.startNextComponent(result);
         });
 
-        $('#cancelButton').click(function() {
+        $('#disagreeButton').click(function() {
             jatos.abortStudy("Consent not given.");
         });
     </script>
