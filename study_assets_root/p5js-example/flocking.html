@@ -3,10 +3,10 @@
 <html>
 
 <head>
-    <script src="/study_assets/p5js-example/p5/p5.min.js"></script>
-    <script src="/study_assets/p5js-example/javascript/jquery-3.1.1.min.js"></script>
-    <script src="/assets/javascripts/jatos.js"></script>
-    <link rel="stylesheet" type="text/css" href="/study_assets/p5js-example/flocking.css" />
+    <script src="p5/p5.min.js"></script>
+    <script src="javascript/jquery-3.1.1.min.js"></script>
+    <script src="jatos.js"></script>
+    <link rel="stylesheet" type="text/css" href="flocking.css" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -22,6 +22,8 @@
             $("#box").hide();
             new p5(s);
         });
+
+        jatos.addAbortButton();
 
         /*
          * This code is taken from https://p5js.org/examples/hello-p5-flocking.html

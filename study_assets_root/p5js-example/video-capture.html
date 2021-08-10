@@ -3,10 +3,10 @@
 <html>
 
 <head>
-    <script src="/study_assets/p5js-example/p5/p5.min.js"></script>
-    <script src="/study_assets/p5js-example/p5/addons/p5.dom.min.js"></script>
-    <script src="/study_assets/p5js-example/javascript/jquery-3.1.1.min.js"></script>
-    <script src="/assets/javascripts/jatos.js"></script>
+    <script src="p5/p5.min.js"></script>
+    <script src="p5/addons/p5.dom.min.js"></script>
+    <script src="javascript/jquery-3.1.1.min.js"></script>
+    <script src="jatos.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -21,7 +21,7 @@
             createCanvas(390, 240);
             capture = createCapture(VIDEO);
             capture.size(320, 240);
-            //capture.hide();
+            // capture.hide();
         }
 
         function draw() {
@@ -34,6 +34,8 @@
         $("body").keypress(function () {
             jatos.startNextComponent();
         });
+
+        jatos.addAbortButton();
     </script>
 
 </body>
