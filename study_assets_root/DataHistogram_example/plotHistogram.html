@@ -1,11 +1,12 @@
 <html>
 <head>
 	<title>Data visualization</title>
-	<link rel="stylesheet" href="/study_assets/DataHistogram_example/libs/jquery-ui-1.11.4.custom/jquery-ui.min.css"/>
-	<link rel="stylesheet" href="/study_assets/DataHistogram_example/css/seeData.css"/>
-	<script src="/study_assets/DataHistogram_example/libs/jquery-2.1.1.min.js"></script>
-	<script src="/study_assets/DataHistogram_example/libs/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
-	<script src="/study_assets/DataHistogram_example/libs/Highcharts-4.1.9/js/highcharts.js"></script>
+	<link rel="stylesheet" href="libs/jquery-ui-1.11.4.custom/jquery-ui.min.css"/>
+	<link rel="stylesheet" href="css/seeData.css"/>
+	<script src="libs/jquery-2.1.1.min.js"></script>
+	<script src="libs/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+	<script src="libs/Highcharts-4.1.9/js/highcharts.js"></script>
+	<script src="jatos.js"></script>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -34,10 +35,13 @@
 					<option value="0">Raw values</option>
 					<option value="1">Normalized values</option>
 				</select>
-			</fieldset> 
+			</fieldset>
 		</form>
 		<p></p>
 		<div id="plot_distribution" class="histogram"></div>
+	</div>
+	<div id="buttons">
+		<button id="doneButton">Done</button>
 	</div>
 
 	<script>
@@ -108,6 +112,11 @@
 	// In the server, replace localhost:9000 with your server's address.  
 
 	startComponent();
+	jatos.addAbortButton();
+
+	$('#doneButton').click(function() {
+		jatos.endStudy("Successfully compleyed study!!!");
+	});
 
 	function startComponent() {
 		$("#normSampleMenu").selectmenu({
@@ -347,29 +356,28 @@
     });
 };
 
-function getClosestNum(num, ar)
-{
-	var i = 0, closest, closestDiff, currentDiff;
-	if(ar.length)
-	{
-		closest = ar[0];
-		for(i;i<ar.length;i++)
-		{           
-			closestDiff = Math.abs(num - closest);
-			currentDiff = Math.abs(num - ar[i]);
-			if(currentDiff < closestDiff)
-			{
-				closest = ar[i];
+	function getClosestNum(num, ar) {
+		var i = 0, closest, closestDiff, currentDiff;
+		if(ar.length)
+		{
+			closest = ar[0];
+			for(i;i<ar.length;i++)
+			{           
+				closestDiff = Math.abs(num - closest);
+				currentDiff = Math.abs(num - ar[i]);
+				if(currentDiff < closestDiff)
+				{
+					closest = ar[i];
+				}
+				closestDiff = null;
+				currentDiff = null;
 			}
-			closestDiff = null;
-			currentDiff = null;
+			//returns first element that is closest to number
+			return closest;
 		}
-        //returns first element that is closest to number
-        return closest;
-    }
-    //no length
-    return false;
-}
+		//no length
+		return false;
+	}
 
 </script>
 

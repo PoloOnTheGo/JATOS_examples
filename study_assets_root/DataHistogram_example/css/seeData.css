@@ -38,3 +38,24 @@ body {
     float:left;
 
 }
+
+#buttons {
+	align-items: center;
+	text-align: center;
+	padding-right: 5%;
+}
+
+button {
+	color: rgb(23, 121, 250);
+	font-size: 16px;
+	font-weight: bold;
+	background-color: rgb(243, 243, 243);
+	border-radius: 4px;
+	padding: 0.5em 2em;
+}
+  
+button:hover {
+	color: rgb(255, 255, 255);
+	background-color: rgb(23, 121, 250);
+}
+
