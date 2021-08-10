@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="/study_assets/group_chat/libs/pure-release-0.6.0/pure-min.css">
-    <link rel="stylesheet" type="text/css" href="/study_assets/group_chat/css/group_chat.css" />
-    <script src="/study_assets/group_chat/libs/jquery-1.11.1.min.js"></script>
-    <script src="/assets/javascripts/jatos.js"></script>
+    <link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+    <link rel="stylesheet" type="text/css" href="css/group_chat.css" />
+    <script src="libs/jquery-1.11.1.min.js"></script>
+    <script src="jatos.js"></script>
 </head>
 
 <body>
@@ -38,6 +38,7 @@
                 "onMemberOpen": onMemberOpen,
                 "onMemberClose": onMemberClose
             });
+            jatos.addAbortButton();
         });
 
         jatos.onError(function(error) {
@@ -123,7 +124,7 @@
             });
             // Send history as result data to JATOS and finish the study 
             var resultJson = JSON.stringify(historyData);
-            jatos.submitResultData(resultJson, jatos.endStudy);
+            jatos.startNextComponent(resultJson);
         });
     </script>
 </body>
