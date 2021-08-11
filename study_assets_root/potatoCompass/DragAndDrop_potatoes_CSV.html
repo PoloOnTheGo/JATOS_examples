@@ -1,10 +1,10 @@
 <!doctype html>
 <html>
 <head>
-    <link rel="stylesheet" href="/study_assets/potatoCompass/css/DragItems_adapted.css"/>
-    <script src="/assets/javascripts/jatos.js"></script>
-    <script src="/study_assets/potatoCompass/libs/interact.min.js"></script>
-    <script src="/study_assets/potatoCompass/libs/jquery-1.11.1.min.js"></script>
+    <link rel="stylesheet" href="css/DragItems_adapted.css"/>
+    <script src="jatos.js"></script>
+    <script src="libs/interact.min.js"></script>
+    <script src="libs/jquery-1.11.1.min.js"></script>
     <meta charset="UTF-8" />
     <title>Canvas Drag and Drop Test</title>
 </head>
@@ -26,6 +26,7 @@
     jatos.onLoad(function() {
         createPotatoDivs();
         drawAxisOnCanvas();
+        jatos.addAbortButton();
     });
 
     function createPotatoDivs() {
@@ -143,7 +144,7 @@
 
     $('#endStudyButton').click(function() {
         var resultDataAsCsv = getResultData(); 
-        jatos.submitResultData(resultDataAsCsv, jatos.startNextComponent);
+        jatos.startNextComponent(resultDataAsCsv);
     });
 
     function getResultData() {

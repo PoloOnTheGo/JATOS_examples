@@ -2,13 +2,13 @@
 <html>
 
 <head>
-	<link rel="shortcut icon" type="image/png" href="/study_assets/potatoCompass/images/favicon.png">
-	<link rel="stylesheet" href="/study_assets/potatoCompass/libs/jquery-ui-1.11.4.custom_darkhive/jquery-ui.min.css" />
-	<link rel="stylesheet" href="/study_assets/potatoCompass/libs/pure-release-0.6.0/pure-min.css">
-	<link rel="stylesheet" href="/study_assets/potatoCompass/css/demographics.css" />
-	<script src="/assets/javascripts/jatos.js"></script>
-	<script src="/study_assets/potatoCompass/libs/jquery-1.11.1.min.js"></script>
-	<script src="/study_assets/potatoCompass/libs/jquery-ui-1.11.4.custom_darkhive/jquery-ui.min.js"></script>
+	<link rel="shortcut icon" type="image/png" href="images/favicon.png">
+	<link rel="stylesheet" href="libs/jquery-ui-1.11.4.custom_darkhive/jquery-ui.min.css" />
+	<link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+	<link rel="stylesheet" href="css/demographics.css" />
+	<script src="jatos.js"></script>
+	<script src="libs/jquery-1.11.1.min.js"></script>
+	<script src="libs/jquery-ui-1.11.4.custom_darkhive/jquery-ui.min.js"></script>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -65,7 +65,6 @@
 			</div>
 		</form>
 	</div>
-	<p id="abort" title="If you quit your results will be deleted and you won't get paid.">Quit Study</p>
 
 	<script>
 		var componentResultData = {};
@@ -89,20 +88,12 @@
 		// What todo when jatos.js is finished loading
 		jatos.onLoad(function() {
 			startComponent();
+			jatos.addAbortButton();
 		});
 
 		// What todo when jatos.js produces an error
 		jatos.onError(function(errorMsg) {
 			showError(errorMsg);
-		});
-
-		// What todo when worker presses the abort button
-		$("#abort").click(function() {
-			var answer = confirm("Do you really want to quit this study? "
-					+ "You will NOT RECEIVE ANY PAY for this study.");
-			if (answer == true) {
-				jatos.abortStudy("Worker decided to abort");
-			}
 		});
 
 		function startComponent() {
@@ -181,7 +172,7 @@
 		function endComponentAndNext() {
 			var resultDataAsStr = JSON.stringify(componentResultData);
 			// Post results back to the server and move to the next component
-			jatos.submitResultData(resultDataAsStr, jatos.startNextComponent, showError);
+			jatos.startNextComponent(resultDataAsStr, showError);
 		}
 
 		function showError(errorMsg) {
