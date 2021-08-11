@@ -2,11 +2,11 @@
 
 <html>
 <head>
-<link rel="shortcut icon" type="image/png" href="/assets/favicon.ico">
-<link rel="stylesheet" href="/study_assets/prisoners_dilemma/css/instructions.css" />
-<link rel="stylesheet" href="/study_assets/prisoners_dilemma/libs/pure-release-0.6.0/pure-min.css">
-<script src="/study_assets/prisoners_dilemma/libs/jquery-1.11.1.min.js"></script>
-<script src="/assets/javascripts/jatos.js"></script>
+<link rel="shortcut icon" type="image/png" href="favicon.ico">
+<link rel="stylesheet" href="css/instructions.css" />
+<link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+<script src="libs/jquery-1.11.1.min.js"></script>
+<script src="jatos.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -19,8 +19,6 @@
 	<p id="text"></p>
 	<p id="moveSlidesText"></p>
 </div>
-
-<p id="quit">Quit Study</p>
 
 <script>
 	var slideList;
@@ -39,6 +37,7 @@
 		currentComponentState = componentState.RUNNING;
 		resetSlide();
 		startComponent();
+		jatos.addAbortButton();
 	});
 
 	// What todo when key is pressed
@@ -115,14 +114,6 @@
 		jatos.endComponent(false, window.errorMsg, jatos.endStudy(false,
 				window.errorMsg));
 	}
-
-	// What todo when worker presses the abort button
-	$("#quit").click(function() {
-		var answer = confirm("Do you really want to quit this study?");
-		if (answer == true) {
-			jatos.abortStudy("Worker decided to abort");
-		}
-	});
 
 	// What todo when jatos.js produces an error
 	jatos.onError(function(errorMsg) {

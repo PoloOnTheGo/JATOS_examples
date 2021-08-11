@@ -2,10 +2,10 @@
 <html>
 
 <head>
-	<link rel="stylesheet" href="/study_assets/prisoners_dilemma/libs/pure-release-0.6.0/pure-min.css">
-	<link rel="stylesheet" type="text/css" href="/study_assets/prisoners_dilemma/css/game.css" />
-	<script src="/study_assets/prisoners_dilemma/libs/jquery-1.11.1.min.js"></script>
-	<script src="/assets/javascripts/jatos.js"></script>
+	<link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+	<link rel="stylesheet" type="text/css" href="css/game.css" />
+	<script src="libs/jquery-1.11.1.min.js"></script>
+	<script src="jatos.js"></script>
 </head>
 
 <body>
@@ -74,13 +74,13 @@
 			</p>
 		</div>
 	</div>
-	<p id="quit">Quit Study</p>
 	<script type="text/javascript">
 		var otherGroupMemberid;
 
 		// What to do when jatos.js is finished initializing
 		jatos.onLoad(function () {
 			joinGroup();
+			jatos.addAbortButton();
 		});
 
 		function joinGroup() {
@@ -278,7 +278,7 @@
 		function onEndStudy() {
 			var gameResults = collectGameResults();
 			var resultJson = JSON.stringify(gameResults);
-			jatos.submitResultData(resultJson).done(jatos.startNextComponent).fail(console.log);
+			jatos.startNextComponent(resultJson).fail(console.log);
 		}
 
 		function collectGameResults() {
@@ -298,14 +298,6 @@
 			results["otherData"] = otherData;
 			return results;
 		}
-
-		// What todo when worker presses the abort button
-		$("#quit").click(function () {
-			var answer = confirm("Do you really want to quit this study?");
-			if (answer == true) {
-				jatos.abortStudy("Worker decided to abort");
-			}
-		});
 
 		function printError(errorMsg) {
 			$('#error').text(errorMsg);
