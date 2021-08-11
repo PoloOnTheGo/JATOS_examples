@@ -24,7 +24,7 @@
 
         $('#agreeButton').click(function() {
             var result = "Consent given.";
-            jatos.submitResultData(result, jatos.startNextComponent);
+            jatos.startNextComponent(result);
         });
 
         $('#cancelButton').click(function() {
