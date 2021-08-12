@@ -17,6 +17,7 @@
 	jatos.onLoad(function () {
 		initBatchConditions();
 		$('#continueButton').prop('disabled', false);
+		jatos.addAbortButton();
 	});
 
 	// We use JATOS' Batch Session to store which conditions are available.
