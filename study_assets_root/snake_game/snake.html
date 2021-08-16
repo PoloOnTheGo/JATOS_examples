@@ -2,10 +2,10 @@
 <html>
 
 <head>
-	<link rel="stylesheet" type="text/css" href="/study_assets/snake_game/css/snake.css" />
-	<link rel="stylesheet" href="/study_assets/snake_game/libs/pure-release-0.6.0/pure-min.css">
-	<script src="/study_assets/snake_game/libs/jquery-1.11.1.min.js"></script>
-	<script src="/assets/javascripts/jatos.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/snake.css" />
+	<link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+	<script src="libs/jquery-1.11.1.min.js"></script>
+	<script src="jatos.js"></script>
 </head>
 
 <body>
@@ -14,7 +14,6 @@
 	<div id="endStudyButton">
 		<button class="buttonJoin pure-button" disabled>End Study</button>
 	</div>
-	<p id="quit">Quit Study</p>
 
 	<script type="text/javascript">
 
@@ -45,6 +44,7 @@
 		jatos.onLoad(function () {
 			joinGroup();
 			$('#endStudyButton button').prop('disabled', false);
+			jatos.addAbortButton();
 		});
 
 		function joinGroup() {
@@ -350,14 +350,6 @@
 		$('#endStudyButton').click(function () {
 			var resultJson = JSON.stringify(resultData);
 			jatos.submitResultData(resultJson, jatos.endStudy);
-		});
-
-		// What todo if worker presses the abort button
-		$("#quit").click(function () {
-			var answer = confirm("Do you really want to quit this study?");
-			if (answer == true) {
-				jatos.abortStudy("Worker decided to abort");
-			}
 		});
 
 	</script>

@@ -1,10 +1,10 @@
 <!DOCTYPE html> 
 <html>
 <head>
-<link rel="stylesheet" href="/study_assets/snake_game/libs/pure-release-0.6.0/pure-min.css">
-<link rel="stylesheet" type="text/css" href="/study_assets/snake_game/css/waiting_room.css" />
-<script	src="/study_assets/snake_game/libs/jquery-1.11.1.min.js"></script>
-<script src="/assets/javascripts/jatos.js"></script>    
+<link rel="stylesheet" href="libs/pure-release-0.6.0/pure-min.css">
+<link rel="stylesheet" type="text/css" href="css/waiting_room.css" />
+<script	src="libs/jquery-1.11.1.min.js"></script>
+<script src="jatos.js"></script>    
 </head>
 <body>
 
@@ -22,13 +22,12 @@
 	</div>
 </div>
 
-<p id="quit">Quit Study</p>
-
 <script type="text/javascript">
 
 // What to do when jatos.js is finished initializing
 jatos.onLoad(function() {
 	$('#joinButton').prop('disabled', false);
+	jatos.addAbortButton();
 });
 
 // What should happen after join button was pressed: Join a group.
@@ -124,7 +123,7 @@ function showMemberStatus() {
 
 function playDingSound() {
 	if (doesSupportMP3) {
-		var audio = new Audio('/study_assets/snake_game/audio/ding-sound.mp3');
+		var audio = new Audio('audio/ding-sound.mp3');
 		audio.play();
 	}
 }
@@ -133,14 +132,6 @@ function doesSupportMP3() {
 	var a = document.createElement('audio');
 	return !!(a.canPlayType && a.canPlayType('audio/mpeg;').replace(/no/, ''));
 }
-
-// What todo when worker presses the abort button
-$("#quit").click(function() {
-	var answer = confirm("Do you really want to quit this study?");
-	if (answer == true) {
-		jatos.abortStudy("Worker decided to abort");
-	}
-});
 
 // What todo when jatos.js produces an error
 jatos.onError(function(errorMsg) {
