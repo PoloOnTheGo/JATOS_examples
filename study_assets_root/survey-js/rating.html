@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <script src="/study_assets/survey-js/javascript/jquery-3.1.1.min.js"></script>
-    <script src="/study_assets/survey-js/survey-jquery/survey.jquery.js"></script>
-    <script src="/assets/javascripts/jatos.js"></script>
-    <link rel="stylesheet" href="/study_assets/survey-js/bootstrap-3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/study_assets/survey-js/study.css">
+    <script src="javascript/jquery-3.1.1.min.js"></script>
+    <script src="survey-jquery/survey.jquery.js"></script>
+    <script src="jatos.js"></script>
+    <link rel="stylesheet" href="bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="study.css">
 </head>
 
 <body>
@@ -28,12 +28,13 @@
 
         survey.onComplete.add(function (result) {
             $("#rating").hide(); // Hides the 'Thank you for completing ...' message
-            jatos.submitResultData(JSON.stringify(result.data), jatos.startNextComponent);
+            jatos.startNextComponent(JSON.stringify(result.data));
         });
 
         $("#rating").Survey({
             model: survey
         });
+        jatos.addAbortButton();
     </script>
 </body>
 
