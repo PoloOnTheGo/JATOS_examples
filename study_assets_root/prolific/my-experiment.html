@@ -23,12 +23,7 @@
 
         $('#finishButton').click(function () {
             var result = { test: "some results" };
-            jatos.submitResultData(result)
-                .done(jatos.endStudyAjax)
-                .done(() => {
-                    // Change this URL to yours from Prolific
-                    window.location.href = 'https://app.prolific.co/submissions/complete?cc=7F61EE4E'
-                });
+            jatos.startNextComponent(result);
             
         });
     </script>
