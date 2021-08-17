@@ -2,9 +2,9 @@
 
 <html>
 <head>
-<link rel="stylesheet" href="/study_assets/video_example_study/css/video_example_study.css" />
-<script src="/study_assets/video_example_study/libs/jquery-1.11.1.min.js"></script>
-<script src="/assets/javascripts/jatos.js"></script>
+<link rel="stylesheet" href="css/video_example_study.css" />
+<script src="libs/jquery-1.11.1.min.js"></script>
+<script src="jatos.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -18,7 +18,6 @@
 		</video>
 		<p id="nextComponent">Press N to continue</p>
 	</div>
-	<p id="abort">Quit Study</p>
 
 	<script>
 		// What todo when jatos.js is finished initializing
@@ -31,15 +30,7 @@
 					jatos.startNextComponent();
 				}
 			});
-
-			// What todo when worker presses the abort button
-			$("#abort").click(function() {
-				var answer = confirm("Do you really want to quit this study? "
-						+ "You will NOT RECEIVE ANY PAY for this study.");
-				if (answer == true) {
-					jatos.abortStudy("Worker decided to abort");
-				}
-			});
+			jatos.addAbortButton();
 		});
 	</script>
 </body>

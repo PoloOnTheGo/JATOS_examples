@@ -2,9 +2,9 @@
 
 <html>
 <head>
-<link rel="stylesheet" href="/study_assets/video_example_study/css/video_example_study.css" />
-<script src="/study_assets/video_example_study/libs/jquery-1.11.1.min.js"></script>
-<script src="/assets/javascripts/jatos.js"></script>
+<link rel="stylesheet" href="css/video_example_study.css" />
+<script src="libs/jquery-1.11.1.min.js"></script>
+<script src="jatos.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -12,15 +12,14 @@
 	<div id="component">
 		<p id="error"></p>
 		<p id="text">A little Video using your native browsers capabilities and is locally stored</p>
-		<video id="example_video_2" width="640" height="264" controls poster="/study_assets/video_example_study/videos/poster.png">
-			<source src="/study_assets/video_example_study/videos/trailer.mp4" type='video/mp4' />
-			<source src="/study_assets/video_example_study/videos/trailer.webm" type='video/webm' />
-			<source src="/study_assets/video_example_study/videos/trailer.ogv" type='video/ogg' />
+		<video id="example_video_2" width="640" height="264" controls poster="videos/poster.png">
+			<source src="videos/trailer.mp4" type='video/mp4' />
+			<source src="videos/trailer.webm" type='video/webm' />
+			<source src="videos/trailer.ogv" type='video/ogg' />
 			<p>Your browser does not support the video tag.</p>
 		</video>
 		<p id="nextComponent">Press N to continue</p>
 	</div>
-	<p id="abort">Quit Study</p>
 
 	<script>
 		// What todo when jatos.js is finished initializing
@@ -34,14 +33,7 @@
 				}
 			});
 
-			// What todo when worker presses the abort button
-			$("#abort").click(function() {
-				var answer = confirm("Do you really want to quit this study? "
-						+ "You will NOT RECEIVE ANY PAY for this study.");
-				if (answer == true) {
-					jatos.abortStudy("Worker decided to abort");
-				}
-			});
+			jatos.addAbortButton();
 		});
 	</script>
 </body>
