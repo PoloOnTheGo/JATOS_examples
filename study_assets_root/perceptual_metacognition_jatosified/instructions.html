@@ -5,27 +5,27 @@
     <meta name="robots" content="noindex">
     <title>Perceptual Metacognition</title>
     
-<link rel='stylesheet' type='text/css' href='/study_assets/perceptual_metacognition_jatosified/static/jspsych.css'>
-<link rel='stylesheet' type='text/css' href='/study_assets/perceptual_metacognition_jatosified/static/default_style.css'>
-<link rel='stylesheet' type='text/css' href='/study_assets/perceptual_metacognition_jatosified/static/style.css'>
+<link rel='stylesheet' type='text/css' href='static/jspsych.css'>
+<link rel='stylesheet' type='text/css' href='static/default_style.css'>
+<link rel='stylesheet' type='text/css' href='static/style.css'>
 </head>
 
 <body>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jquery.min.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-text.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-poldrack-text.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-poldrack-instructions.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-attention-check.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-poldrack-single-stim.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-single-stim-button.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-single-stim.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-call-function.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/jspsych-survey-text.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/static/poldrack_utils.js'></script>
-<script src="/assets/javascripts/jatos.js"></script> 
-<script src='/study_assets/perceptual_metacognition_jatosified/helpers.js'></script>
-<script src='/study_assets/perceptual_metacognition_jatosified/instructions.js'></script>
+<script src='static/jquery.min.js'></script>
+<script src='static/jspsych.js'></script>
+<script src='static/jspsych-text.js'></script>
+<script src='static/jspsych-poldrack-text.js'></script>
+<script src='static/jspsych-poldrack-instructions.js'></script>
+<script src='static/jspsych-attention-check.js'></script>
+<script src='static/jspsych-poldrack-single-stim.js'></script>
+<script src='static/jspsych-single-stim-button.js'></script>
+<script src='static/jspsych-single-stim.js'></script>
+<script src='static/jspsych-call-function.js'></script>
+<script src='static/jspsych-survey-text.js'></script>
+<script src='static/poldrack_utils.js'></script>
+<script src="jatos.js"></script> 
+<script src='helpers.js'></script>
+<script src='instructions.js'></script>
 
 <script>
 jatos.onLoad(function() {
@@ -36,6 +36,7 @@ jatos.onLoad(function() {
 		timeline: perceptual_metacognition_experiment,
 		display_element: "getDisplayElement",
 		fullscreen: false,
+		on_trial_start: jatos.addAbortButton,
 		on_trial_finish: function(data){
 			addID('perceptual_metacognition')
 		},
