@@ -4,12 +4,12 @@
 
 <head>
     <title>My experiment</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/jspsych.js"></script>
-    <script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/plugins/jspsych-text.js"></script>
-    <script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
-    <script src="/assets/javascripts/jatos.js"></script>
-    <link href="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+    <script src="jquery-3.5.1.min.js"></script>
+    <script src="jspsych-5.0.3/jspsych.js"></script>
+    <script src="jspsych-5.0.3/plugins/jspsych-text.js"></script>
+    <script src="jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
+    <script src="jatos.js"></script>
+    <link href="jspsych-5.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -123,10 +123,11 @@
     jatos.onLoad(
         jsPsych.init({
             timeline: timeline,
+            on_trial_start: jatos.addAbortButton,
             on_finish: function() {
                 // Changed for JATOS: Instead of displaying the data submit them to JATOS.
                 var resultJson = JSON.stringify(jsPsych.data.getData());
-                jatos.submitResultData(resultJson, jatos.endStudy);  // This is the last component because this and condition B are mutually exclusive
+                jatos.startNextComponent(resultJson);  // This is the last component because this and condition B are mutually exclusive
             }
         })
     );

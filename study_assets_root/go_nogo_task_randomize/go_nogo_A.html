@@ -4,12 +4,12 @@
 
 <head>
     <title>My experiment</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/jspsych.js"></script>
-    <script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/plugins/jspsych-text.js"></script>
-    <script src="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
-    <script src="/assets/javascripts/jatos.js"></script>
-    <link href="/study_assets/go_nogo_task_randomize/jspsych-5.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+    <script src="jquery-3.5.1.min.js"></script>
+    <script src="jspsych-5.0.3/jspsych.js"></script>
+    <script src="jspsych-5.0.3/plugins/jspsych-text.js"></script>
+    <script src="jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
+    <script src="jatos.js"></script>
+    <link href="jspsych-5.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
@@ -30,9 +30,9 @@
             "press the letter F on the keyboard as fast as you can.</p>" +
             "<p>If the circle is <strong>orange</strong>, do not press " +
             "any key.</p>" +
-            "<div class='left center-content'><img src='/study_assets/go_nogo_task_randomize/images/blue.png'></img>" +
+            "<div class='left center-content'><img src='images/blue.png'></img>" +
             "<p class='small'><strong>Press the F key</strong></p></div>" +
-            "<div class='right center-content'><img src='/study_assets/go_nogo_task_randomize/images/orange.png'></img>" +
+            "<div class='right center-content'><img src='images/orange.png'></img>" +
             "<p class='small'><strong>Do not press a key</strong></p></div>" +
             "<p>Press any key to begin.</p>",
         timing_post_trial: 2000
@@ -41,12 +41,12 @@
     /* define test block */
 
     var test_stimuli = [{
-        stimulus: "/study_assets/go_nogo_task_randomize/images/blue.png",
+        stimulus: "images/blue.png",
         data: {
             response: 'go'
         }
     }, {
-        stimulus: "/study_assets/go_nogo_task_randomize/images/orange.png",
+        stimulus: "images/orange.png",
         data: {
             response: 'no-go'
         }
@@ -123,10 +123,11 @@
     jatos.onLoad(
         jsPsych.init({
             timeline: timeline,
+            on_trial_start: jatos.addAbortButton,
             on_finish: function() {
                 // Changed for JATOS: Instead of displaying the data submit them to JATOS.
                 var resultJson = JSON.stringify(jsPsych.data.getData());
-                jatos.submitResultData(resultJson, jatos.endStudy);  // This is the last component because this and condition B are mutually exclusive
+                jatos.startNextComponent(resultJson);  // This is the last component because this and condition B are mutually exclusive
             }
         })
     );
