@@ -120,9 +120,10 @@
     jatos.onLoad(function () {
         jsPsych.init({
             timeline: timeline,
+            on_trial_start: jatos.addAbortButton,
             on_finish: function() {
                 var resultJson = jsPsych.data.get().json();
-                jatos.submitResultData(resultJson, jatos.startNextComponent);
+                jatos.startNextComponent(resultJson);
             }
         });
     });
