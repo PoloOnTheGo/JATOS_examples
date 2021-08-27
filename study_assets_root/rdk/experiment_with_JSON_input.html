@@ -31,12 +31,12 @@
 		<!-- Adapted for JATOS by Kristian Lange -->
 		
 		<title> RDK Experiment</title>
-		 <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		 <script src = "/study_assets/rdk/jspsych-5.0.3/jspsych.js"></script>
-		 <script src = "/study_assets/rdk/jspsych-5.0.3/plugins/jspsych-RDK.js"></script> <!--Include the script for the RDK plugin-->
-		 <script src = "/study_assets/rdk/jspsych-5.0.3/plugins/jspsych-text.js"></script>
-		 <script src="/assets/javascripts/jatos.js"></script>
-		 <link href = "/study_assets/rdk/jspsych-5.0.3/css/jspsych.css" rel = "stylesheet" type = "text/css"></link>
+		 <script src = "jquery-3.5.1.min.js"></script>
+		 <script src = "jspsych-5.0.3/jspsych.js"></script>
+		 <script src = "jspsych-5.0.3/plugins/jspsych-RDK.js"></script> <!--Include the script for the RDK plugin-->
+		 <script src = "jspsych-5.0.3/plugins/jspsych-text.js"></script>
+		 <script src="jatos.js"></script>
+		 <link href = "jspsych-5.0.3/css/jspsych.css" rel = "stylesheet" type = "text/css"></link>
 	</head>
 	<body>
 	</body>
@@ -92,10 +92,11 @@
 			//Initiate the experiment
 			jsPsych.init({
 				timeline: main_timeline,
+				on_trial_start: jatos.addAbortButton,
 				on_finish: function(){ //Execute this when the experiment finishes
 					// Store result data in the JATOS server and end experiment
 					var resultDataStr = jsPsych.data.dataAsCSV();
-            		jatos.submitResultData(resultDataStr).done(jatos.endStudy);
+            		jatos.startNextComponent(resultDataStr);
 				}
 			})
 
