@@ -5,13 +5,13 @@
 <head>
   <title>Hello world experiment</title>
   <!-- Changed for JATOS: Added study assets path -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-  <script src="/study_assets/lexical_decision/jspsych-5.0.3/jspsych.js"></script>
-  <script src="/study_assets/lexical_decision/jspsych-5.0.3/plugins/jspsych-instructions.js"></script>
-  <script src="/study_assets/lexical_decision/jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
-  <script src="/study_assets/lexical_decision/jspsych-5.0.3/plugins/jspsych-text.js"></script>
-  <script src="/assets/javascripts/jatos.js"></script>
-  <link href="/study_assets/lexical_decision/jspsych-5.0.3/css/jspsych.css" rel="stylesheet"></link>
+  <script src="jquery-3.5.1.min.js"></script>
+  <script src="jspsych-5.0.3/jspsych.js"></script>
+  <script src="jspsych-5.0.3/plugins/jspsych-instructions.js"></script>
+  <script src="jspsych-5.0.3/plugins/jspsych-single-stim.js"></script>
+  <script src="jspsych-5.0.3/plugins/jspsych-text.js"></script>
+  <script src="jatos.js"></script>
+  <link href="jspsych-5.0.3/css/jspsych.css" rel="stylesheet"></link>
 </head>
 
 <body>
@@ -158,10 +158,11 @@
   jatos.onLoad(function() {
     jsPsych.init({
       timeline: timeline,
+      on_trial_start: jatos.addAbortButton,
       on_finish: function() {
         /* Changed for JATOS: submit result data to JATOS and start next component */
         var resultJson = JSON.stringify(jsPsych.data.getData());
-        jatos.submitResultData(resultJson, jatos.startNextComponent);
+        jatos.startNextComponent(resultJson);
       }
     });
   });
